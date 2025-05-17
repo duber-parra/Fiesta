@@ -11,7 +11,7 @@ export function EventDetails() {
       <CardHeader className="text-center">
         <div className="flex justify-center items-center mb-2"> {/* Changed mb-4 to mb-2 */}
           <Image
-            src="https://i.postimg.cc/PJGLxqCw/Jorge-3.png"
+            src="https://i.postimg.cc/GhcCwsKs/Jorge-3.png"
             alt="Jorge Enrique Carvajal"
             width={160} // Increased from 128 to 160
             height={160} // Increased from 128 to 160
