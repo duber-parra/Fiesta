@@ -10,13 +10,12 @@ export function EventDetails() {
     <Card className="shadow-xl">
       <CardHeader className="text-center">
         <div className="flex justify-center items-center mb-4">
-          {/* Replace PartyPopper with Image component */}
           <Image
             src="https://i.postimg.cc/PJGLxqCw/Jorge-3.png"
             alt="Jorge Enrique Carvajal"
-            width={96} // w-24 (96px)
-            height={96} // h-24 (96px)
-            className="rounded-full object-cover border-2 border-primary shadow-md"
+            width={128} // Increased from 96 to 128 (w-24 to w-32)
+            height={128} // Increased from 96 to 128 (h-24 to h-32)
+            className="rounded-full object-cover shadow-md" // Removed border-2 border-primary
             priority // Optional: if the image is above the fold
             data-ai-hint="portrait person"
           />
