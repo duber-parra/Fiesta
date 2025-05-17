@@ -11,6 +11,22 @@ const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRmBh
 export async function submitRsvp(prevState: RsvpFormState, formData: FormData): Promise<RsvpFormState> {
   console.log("[submitRsvp Action] Received formData. Full Name:", formData.get("fullName"));
 
+  // Log all FormData entries for detailed debugging
+  const formDataEntries: Record<string, any> = {};
+  for (const [key, value] of formData.entries()) {
+    if (formDataEntries[key]) {
+      if (Array.isArray(formDataEntries[key])) {
+        formDataEntries[key].push(value);
+      } else {
+        formDataEntries[key] = [formDataEntries[key], value];
+      }
+    } else {
+      formDataEntries[key] = value;
+    }
+  }
+  console.log("[submitRsvp Action] Raw FormData entries:", formDataEntries);
+
+
   // Correctly parse guestNames from FormData
   const tempGuestNames: { index: number, value: string }[] = [];
   for (const [key, value] of formData.entries()) {
@@ -48,14 +64,18 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
   const dataToSubmit = validatedFields.data;
 
   // Check if the URL is the placeholder. If it is, simulate success without actual submission.
-  if (GOOGLE_SHEET_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
-    console.warn("[submitRsvp Action] RSVP Data (not sent, using placeholder URL):", dataToSubmit);
-    const thankYouMessage = dataToSubmit.attending === "yes"
+  if (GOOGLE_SHEET_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE" || !GOOGLE_SHEET_WEB_APP_URL.startsWith("https://script.google.com/")) {
+    const warningMessage = GOOGLE_SHEET_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"
+      ? "La integración con Google Sheets no está configurada. Reemplaza la URL placeholder en actions.ts."
+      : "La URL de Google Sheets en actions.ts no parece ser válida. Por favor, verifica.";
+    console.warn(`[submitRsvp Action] RSVP Data (not sent, ${warningMessage}):`, dataToSubmit);
+    
+    const simulatedThankYouMessage = dataToSubmit.attending === "yes"
       ? "¡Gracias por confirmar tu asistencia! Nos vemos en la celebración."
       : "Lamentamos que no puedas asistir. ¡Gracias por responder!";
 
     return {
-      message: `${thankYouMessage} (Nota: La integración con Google Sheets no está configurada completamente. Reemplaza la URL en actions.ts).`,
+      message: `${simulatedThankYouMessage} (Nota: ${warningMessage})`,
       success: true,
       submittedData: dataToSubmit,
     };
@@ -63,6 +83,7 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
 
   try {
     console.log("[submitRsvp Action] Attempting to submit to Google Sheet URL:", GOOGLE_SHEET_WEB_APP_URL);
+    console.log("[submitRsvp Action] Data being sent to Google Sheet:", JSON.stringify(dataToSubmit));
     const response = await fetch(GOOGLE_SHEET_WEB_APP_URL, {
       method: 'POST',
       headers: {
@@ -78,7 +99,8 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
       let errorDataMessage = `Error del servidor: ${response.statusText || 'Error desconocido'}`;
       try {
         const errorJson = JSON.parse(errorText);
-        errorDataMessage = errorJson.message || response.statusText || 'Error procesando respuesta del servidor.';
+        // Use errorJson.message if the Apps Script sends a message in its error response
+        errorDataMessage = errorJson.message || errorJson.error || response.statusText || 'Error procesando respuesta del servidor.';
       } catch (e) {
         // If parsing error body as JSON fails, use the raw text or statusText
         errorDataMessage = errorText || response.statusText || 'Error en la respuesta del servidor.';
