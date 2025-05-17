@@ -3,10 +3,9 @@
 
 import type { ChangeEvent} from 'react';
 import { useState, useEffect, useActionState } from "react";
-// Removed useFormStatus from react-dom, useActionState handles pending state via form.formState.isSubmitting or its own pending value if needed
-import { useForm, useFieldArray, useFormContext } from "react-hook-form"; // Added useFormContext
+import { useForm, useFieldArray, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { z } from "zod"; // Import z from zod for type inference
+import type { z } from "zod";
 import { UserPlus, Send, Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,7 @@ const initialState: RsvpFormState = {
 };
 
 function SubmitButton() {
-  const { formState: { isSubmitting } } = useFormContext<RsvpFormData>(); // Get isSubmitting from react-hook-form context
+  const { formState: { isSubmitting } } = useFormContext<RsvpFormData>();
 
   return (
     <Button type="submit" disabled={isSubmitting} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
@@ -71,7 +70,7 @@ export function RsvpForm() {
 
   useEffect(() => {
     if (watchAttending === "no") {
-      remove();
+      remove(); // Clears all guest name fields
     }
   }, [watchAttending, remove]);
 
@@ -80,7 +79,7 @@ export function RsvpForm() {
       if (state.success) {
         toast({
           title: "¡Confirmación Enviada!",
-          description: state.message,
+          description: state.message, // This message will come from the server action
           variant: "default",
           action: <CheckCircle2 className="text-green-500" />,
         });
@@ -128,15 +127,17 @@ export function RsvpForm() {
       <CardHeader>
         <CardTitle className="text-2xl font-semibold text-center text-primary">Formulario de Confirmación</CardTitle>
       </CardHeader>
-      <Form {...form}> {/* This 'Form' is FormProvider from @/components/ui/form */}
+      <Form {...form}>
         <form
-          action={formAction} // Server action
+          action={formAction}
           onSubmit={form.handleSubmit(
             () => {
+              // Client-side validation passed. Native form submission will proceed, triggering `formAction`.
               console.log("[RsvpForm] Client-side validation passed. Native form submission should proceed.");
             },
             (errors) => {
-              console.error("[RsvpForm] Client-side validation failed:", errors);
+              // Client-side validation failed. react-hook-form will display errors.
+              console.error("[RsvpForm] Client-side validation failed:", JSON.stringify(errors, null, 2));
             }
           )}
           className="space-y-6"
@@ -181,7 +182,7 @@ export function RsvpForm() {
                       onValueChange={(value: "yes" | "no") => {
                         field.onChange(value);
                         if (value === "no") {
-                          remove();
+                          remove(); // Clear guest names if "no"
                         }
                       }}
                       value={field.value}
@@ -219,8 +220,8 @@ export function RsvpForm() {
                   <FormField
                     control={form.control}
                     key={item.id}
-                    name={`guestNames.${index}`}
-                    render={({ field: guestField }) => (
+                    name={`guestNames.${index}`} // Use dot notation for array field names
+                    render={({ field: guestField }) => ( // Renamed field to guestField to avoid conflict
                       <FormItem>
                         <div className="flex items-center space-x-2">
                           <FormControl>
@@ -246,7 +247,7 @@ export function RsvpForm() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => append("")}
+                  onClick={() => append("")} // Add an empty string for a new guest
                   className="mt-2 flex items-center"
                 >
                   <UserPlus className="mr-2 h-4 w-4" />
@@ -275,5 +276,3 @@ export function RsvpForm() {
     </Card>
   );
 }
-
-    

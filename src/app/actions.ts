@@ -11,23 +11,27 @@ const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRmBh
 export async function submitRsvp(prevState: RsvpFormState, formData: FormData): Promise<RsvpFormState> {
   console.log("[submitRsvp Action] Received formData. Full Name:", formData.get("fullName"));
 
+  // Correctly parse guestNames from FormData
   const tempGuestNames: { index: number, value: string }[] = [];
   for (const [key, value] of formData.entries()) {
-    const match = key.match(/^guestNames\.(\d+)$/);
+    const match = key.match(/^guestNames\.(\d+)$/); // Matches guestNames.0, guestNames.1, etc.
     if (match && typeof value === 'string') {
       tempGuestNames.push({ index: parseInt(match[1], 10), value: value });
     }
   }
+  // Sort by index to maintain order and filter out empty names submitted by react-hook-form if field is empty
   tempGuestNames.sort((a, b) => a.index - b.index);
   const guestNamesArray = tempGuestNames.map(item => item.value).filter(name => name.trim() !== "");
+
 
   const rawFormData = {
     fullName: formData.get("fullName"),
     whatsapp: formData.get("whatsapp"),
     attending: formData.get("attending"),
+    // Only include guestNames if there are actual names, otherwise Zod might fail if it's an empty array but expecting undefined
     guestNames: guestNamesArray.length > 0 ? guestNamesArray : undefined,
   };
-  console.log("[submitRsvp Action] Parsed rawFormData:", rawFormData);
+  console.log("[submitRsvp Action] Parsed rawFormData for Zod:", rawFormData);
 
   const validatedFields = rsvpFormSchema.safeParse(rawFormData);
 
@@ -64,7 +68,7 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(dataToSubmit),
+      body: JSON.stringify(dataToSubmit), // Send validated data
     });
     console.log("[submitRsvp Action] Google Sheet API response status:", response.status);
 
@@ -89,6 +93,7 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
     const result = await response.json();
     console.log("[submitRsvp Action] Google Sheet API Success:", result);
 
+    // Refined thank you messages
     const thankYouMessage = dataToSubmit.attending === "yes"
       ? "¡Gracias por confirmar tu asistencia! Nos vemos en la celebración."
       : "Lamentamos que no puedas asistir. ¡Gracias por responder!";
