@@ -104,14 +104,9 @@ export function RsvpForm() {
           (Object.keys(state.errors) as FormFieldKey[]).forEach((key) => {
             const fieldKey = key === "_form" ? undefined : key; 
             if (fieldKey && state.errors && state.errors[fieldKey]) {
-                 // For guestNames, this will show a general error for the array, not individual fields.
-                 // Zod's fieldErrors for an array of strings with errors might be:
-                 // guestNames: { _errors: [], "0": ["msg for item 0"], "1": ["msg for item 1"] }
-                 // The current logic might pick up _errors?.[0] or the first indexed error.
                  const errorMessages = state.errors[fieldKey];
                  let messageToShow: string | undefined;
                  if (typeof errorMessages === 'object' && errorMessages !== null && !Array.isArray(errorMessages)) {
-                    // Potentially Zod's object structure for array errors
                     messageToShow = (errorMessages as any)._errors?.[0] || Object.values(errorMessages as any).flat()?.[0] as string | undefined;
                  } else if (Array.isArray(errorMessages)) {
                     messageToShow = errorMessages[0];
@@ -119,7 +114,7 @@ export function RsvpForm() {
 
                  if (messageToShow) {
                     form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: messageToShow });
-                 } else if (typeof errorMessages === 'string') { // Fallback for simple string error
+                 } else if (typeof errorMessages === 'string') { 
                     form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: errorMessages });
                  }
             }
@@ -128,7 +123,7 @@ export function RsvpForm() {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, toast]); // form is not needed in deps as per react-hook-form docs for setError
+  }, [state, toast]); 
 
   return (
     <Card className="shadow-xl">
@@ -180,28 +175,30 @@ export function RsvpForm() {
                   <FormControl>
                     <RadioGroup
                       onValueChange={(value: "yes" | "no") => {
-                        field.onChange(value); // Update RHF state for "attending"
+                        field.onChange(value); 
                         if (value === "no") {
-                          remove(); // Clear all guest name fields from the array
+                          remove(); 
                         }
                       }}
                       value={field.value}
-                      className="flex flex-col space-y-3" // Increased spacing
+                      className="flex flex-col space-y-3" 
                     >
-                      <FormItem className="border p-4 rounded-lg hover:bg-muted/80 transition-colors flex flex-row items-center space-x-4">
-                        <FormControl>
+                      <FormItem className="border rounded-lg hover:bg-muted/80 transition-colors">
+                        <FormLabel 
+                          htmlFor="attending-yes" 
+                          className="flex w-full cursor-pointer flex-row items-center space-x-4 p-4 text-base font-medium"
+                        >
                           <RadioGroupItem value="yes" id="attending-yes" className="h-6 w-6" />
-                        </FormControl>
-                        <FormLabel htmlFor="attending-yes" className="text-base font-medium cursor-pointer">
-                          Sí, ¡allí estaré!
+                          <span>Sí, ¡allí estaré!</span>
                         </FormLabel>
                       </FormItem>
-                      <FormItem className="border p-4 rounded-lg hover:bg-muted/80 transition-colors flex flex-row items-center space-x-4">
-                        <FormControl>
+                      <FormItem className="border rounded-lg hover:bg-muted/80 transition-colors">
+                        <FormLabel 
+                          htmlFor="attending-no" 
+                          className="flex w-full cursor-pointer flex-row items-center space-x-4 p-4 text-base font-medium"
+                        >
                           <RadioGroupItem value="no" id="attending-no" className="h-6 w-6" />
-                        </FormControl>
-                        <FormLabel htmlFor="attending-no" className="text-base font-medium cursor-pointer">
-                          No podré asistir.
+                          <span>No podré asistir.</span>
                         </FormLabel>
                       </FormItem>
                     </RadioGroup>
@@ -262,8 +259,6 @@ export function RsvpForm() {
           </CardFooter>
         </form>
       </Form>
-      {/* This success message display seems redundant if toast is used for success.
-          Consider removing if toast is sufficient. Keeping for now. */}
       {state.success && state.message && (
          <div className="p-4 mt-4 text-center bg-green-100 border border-green-300 text-green-700 rounded-md">
             <p>{state.message}</p>
