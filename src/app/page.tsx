@@ -1,10 +1,16 @@
 
 import { EventDetails } from "@/components/event-details";
 import { RsvpForm } from "@/components/rsvp-form";
-import { Confetti } from "@/components/confetti"; // Import the new Confetti component
+import { Confetti } from "@/components/confetti";
 import { Heart } from "lucide-react";
 
-export default function HomePage() {
+// Helper function to introduce a delay
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export default async function HomePage() {
+  // Add a 3-second delay for testing the loading screen
+  await sleep(3000);
+
   return (
     <> {/* Use a fragment to allow Confetti to be a sibling at the top level */}
       <Confetti /> {/* Add Confetti component here */}
