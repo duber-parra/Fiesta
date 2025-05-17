@@ -3,14 +3,14 @@
 
 import type { ChangeEvent} from 'react';
 import { useState, useEffect, useActionState } from "react";
-import { useForm, useFieldArray, useFormContext, FormProvider } from "react-hook-form"; // Added FormProvider and useFormContext
+import { useForm, useFieldArray, FormProvider, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { UserPlus, Send, Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"; // Form is already FormProvider
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"; // Form (FormProvider) is used via <FormProvider>
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { submitRsvp } from "@/app/actions";
@@ -28,7 +28,7 @@ const initialState: RsvpFormState = {
 };
 
 function SubmitButton() {
-  const { formState: { isSubmitting } } = useFormContext<RsvpFormData>(); // Get isSubmitting from react-hook-form context
+  const { formState: { isSubmitting } } = useFormContext<RsvpFormData>();
 
   return (
     <Button type="submit" disabled={isSubmitting} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
@@ -56,7 +56,7 @@ export function RsvpForm() {
     defaultValues: {
       fullName: "",
       whatsapp: "",
-      attending: undefined,
+      attending: undefined, // Zod schema handles undefined for enum
       guestNames: [],
     },
   });
@@ -74,16 +74,17 @@ export function RsvpForm() {
     }
   }, [watchAttending, remove]);
 
+  // Effect to handle server action response (state updates)
   useEffect(() => {
     if (state.message) {
       if (state.success) {
         toast({
           title: "¡Confirmación Enviada!",
-          description: state.message, // This message will come from the server action
+          description: state.message,
           variant: "default",
           action: <CheckCircle2 className="text-green-500" />,
         });
-        form.reset({
+        form.reset({ // Reset form on successful submission
           fullName: "",
           whatsapp: "",
           attending: undefined,
@@ -96,13 +97,15 @@ export function RsvpForm() {
           variant: "destructive",
           action: <XCircle className="text-red-500" />,
         });
+        // Populate form errors from server action state
         if (state.errors) {
           type FormFieldKey = keyof RsvpFormData | "_form";
           (Object.keys(state.errors) as FormFieldKey[]).forEach((key) => {
-            const fieldKey = key === "_form" ? undefined : key;
+            const fieldKey = key === "_form" ? undefined : key; // _form errors are handled separately
             if (fieldKey && state.errors && state.errors[fieldKey]) {
                  const errorMessages = state.errors[fieldKey];
                  let messageToShow: string | undefined;
+                 // Handle complex Zod error structures for arrays/objects
                  if (typeof errorMessages === 'object' && errorMessages !== null && !Array.isArray(errorMessages)) {
                     messageToShow = (errorMessages as any)._errors?.[0] || Object.values(errorMessages as any).flat()?.[0] as string | undefined;
                  } else if (Array.isArray(errorMessages)) {
@@ -111,7 +114,7 @@ export function RsvpForm() {
 
                  if (messageToShow) {
                     form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: messageToShow });
-                 } else if (typeof errorMessages === 'string') {
+                 } else if (typeof errorMessages === 'string') { // Fallback for simple string errors
                     form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: errorMessages });
                  }
             }
@@ -120,27 +123,29 @@ export function RsvpForm() {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, toast, form]);
+  }, [state]); // Removed form.reset and form.setError from deps as they might cause loops if state changes trigger them and they change state
+
+
+  const processForm = async (data: RsvpFormData) => {
+    console.log("[RsvpForm] Client-side validation passed. Data for server action:", data);
+    // Directly call formAction with the data object.
+    // The server action `submitRsvp` will now receive this object.
+    formAction(data);
+  };
+
+  const onInvalid = (errors: any) => {
+    console.error("[RsvpForm] Client-side validation failed:", JSON.stringify(errors, null, 2));
+  };
+
 
   return (
     <Card className="shadow-xl">
       <CardHeader>
         <CardTitle className="text-2xl font-semibold text-center text-primary">Formulario de Confirmación</CardTitle>
       </CardHeader>
-      <FormProvider {...form}> {/* Ensure FormProvider wraps the form */}
+      <FormProvider {...form}>
         <form
-          action={formAction} // Directly use the server action
-          // Remove onSubmit for this test
-          // onSubmit={form.handleSubmit(
-          //   () => {
-          //     // Client-side validation passed. Native form submission will proceed, triggering `formAction`.
-          //     console.log("[RsvpForm] Client-side validation passed. Native form submission should proceed.");
-          //   },
-          //   (errors) => {
-          //     // Client-side validation failed. react-hook-form will display errors.
-          //     console.error("[RsvpForm] Client-side validation failed:", JSON.stringify(errors, null, 2));
-          //   }
-          // )}
+          onSubmit={form.handleSubmit(processForm, onInvalid)} // Use RHF handleSubmit
           className="space-y-6"
         >
           <CardContent className="space-y-4">
@@ -183,11 +188,12 @@ export function RsvpForm() {
                       onValueChange={(value: "yes" | "no") => {
                         field.onChange(value);
                         if (value === "no") {
-                          remove(); // Clear guest names if "no"
+                          remove(); 
                         }
                       }}
                       value={field.value}
                       className="flex flex-col space-y-3"
+                      // name={field.name} // RHF Controller handles name internally
                     >
                       <FormItem className="border rounded-lg hover:bg-muted/80 transition-colors">
                         <FormLabel
@@ -221,8 +227,8 @@ export function RsvpForm() {
                   <FormField
                     control={form.control}
                     key={item.id}
-                    name={`guestNames.${index}`} // Use dot notation for array field names
-                    render={({ field: guestField }) => ( // Renamed field to guestField to avoid conflict
+                    name={`guestNames.${index}`} 
+                    render={({ field: guestField }) => ( 
                       <FormItem>
                         <div className="flex items-center space-x-2">
                           <FormControl>
@@ -248,7 +254,7 @@ export function RsvpForm() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => append({ value: "" } as any)} // Adjust for react-hook-form v7+, append an object
+                  onClick={() => append("")} // For string array, append a string. Zod min(1) will catch empty.
                   className="mt-2 flex items-center"
                 >
                   <UserPlus className="mr-2 h-4 w-4" />
@@ -277,4 +283,3 @@ export function RsvpForm() {
     </Card>
   );
 }
-

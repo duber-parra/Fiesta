@@ -9,48 +9,14 @@ console.log("!!!!!!!! MODULE actions.ts LOADED ON SERVER ( dovrebbe apparire all
 
 const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRmBhm6Yp-uh89kSyw6nAjI-ZpTzml0RpEJHLtvXBu03jFSURjDX4IDOnzSc25V6VFwQ/exec";
 
-export async function submitRsvp(prevState: RsvpFormState, formData: FormData): Promise<RsvpFormState> {
+// Changed formData: FormData to data: z.infer<typeof rsvpFormSchema>
+export async function submitRsvp(prevState: RsvpFormState, data: z.infer<typeof rsvpFormSchema>): Promise<RsvpFormState> {
   console.log("!!!!!!!! SERVER ACTION submitRsvp ENTERED ( dovrebbe apparire ad ogni invio ) !!!!!!!!");
-  console.log("[submitRsvp Action] Received formData. Full Name:", formData.get("fullName"));
+  // Now receiving a data object directly from react-hook-form's handleSubmit
+  console.log("[submitRsvp Action] Received data object:", data);
 
-  // Log all FormData entries for detailed debugging
-  const formDataEntries: Record<string, any> = {};
-  for (const [key, value] of formData.entries()) {
-    if (formDataEntries[key]) {
-      if (Array.isArray(formDataEntries[key])) {
-        formDataEntries[key].push(value);
-      } else {
-        formDataEntries[key] = [formDataEntries[key], value];
-      }
-    } else {
-      formDataEntries[key] = value;
-    }
-  }
-  console.log("[submitRsvp Action] Raw FormData entries:", formDataEntries);
-
-
-  // Correctly parse guestNames from FormData
-  const tempGuestNames: { index: number, value: string }[] = [];
-  for (const [key, value] of formData.entries()) {
-    const match = key.match(/^guestNames\.(\d+)$/); // Matches guestNames.0, guestNames.1, etc.
-    if (match && typeof value === 'string') {
-      tempGuestNames.push({ index: parseInt(match[1], 10), value: value });
-    }
-  }
-  // Sort by index to maintain order and filter out empty names submitted by react-hook-form if field is empty
-  tempGuestNames.sort((a, b) => a.index - b.index);
-  const guestNamesArray = tempGuestNames.map(item => item.value).filter(name => name.trim() !== "");
-
-
-  const rawFormData = {
-    fullName: formData.get("fullName"),
-    whatsapp: formData.get("whatsapp"),
-    attending: formData.get("attending"),
-    guestNames: guestNamesArray, // Pass array directly
-  };
-  console.log("[submitRsvp Action] Parsed rawFormData for Zod:", rawFormData);
-
-  const validatedFields = rsvpFormSchema.safeParse(rawFormData);
+  // Zod validation now uses the data object directly
+  const validatedFields = rsvpFormSchema.safeParse(data);
 
   if (!validatedFields.success) {
     console.error("[submitRsvp Action] Zod validation failed:", validatedFields.error.flatten().fieldErrors);
@@ -62,7 +28,14 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
   }
   console.log("[submitRsvp Action] Zod validation successful. Data:", validatedFields.data);
 
-  const dataToSubmit = validatedFields.data;
+  // Use the validated data. guestNames will be an array of strings.
+  const dataToSubmit = {
+    ...validatedFields.data,
+    // Ensure guestNames is an array of strings, filtering out any empty strings if Zod didn't catch them
+    // (though Zod's .min(1) on guestName strings should prevent fully empty strings if a field was added)
+    guestNames: validatedFields.data.guestNames ? validatedFields.data.guestNames.filter(name => typeof name === 'string' && name.trim() !== "") : [],
+  };
+
 
   // Check if the URL is the placeholder. If it is, simulate success without actual submission.
   if (GOOGLE_SHEET_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE" || !GOOGLE_SHEET_WEB_APP_URL.startsWith("https://script.google.com/")) {
@@ -90,7 +63,7 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(dataToSubmit), // Send validated data
+      body: JSON.stringify(dataToSubmit), // Send validated data object
     });
     console.log("[submitRsvp Action] Google Sheet API response status:", response.status);
 
@@ -100,10 +73,8 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
       let errorDataMessage = `Error del servidor: ${response.statusText || 'Error desconocido'}`;
       try {
         const errorJson = JSON.parse(errorText);
-        // Use errorJson.message if the Apps Script sends a message in its error response
         errorDataMessage = errorJson.message || errorJson.error || response.statusText || 'Error procesando respuesta del servidor.';
       } catch (e) {
-        // If parsing error body as JSON fails, use the raw text or statusText
         errorDataMessage = errorText || response.statusText || 'Error en la respuesta del servidor.';
       }
       return {
@@ -116,7 +87,6 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
     const result = await response.json();
     console.log("[submitRsvp Action] Google Sheet API Success:", result);
 
-    // Refined thank you messages
     const thankYouMessage = dataToSubmit.attending === "yes"
       ? "¡Gracias por confirmar tu asistencia! Nos vemos en la celebración."
       : "Lamentamos que no puedas asistir. ¡Gracias por responder!";
