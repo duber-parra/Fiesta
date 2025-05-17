@@ -13,9 +13,9 @@ export function EventDetails() {
           <Image
             src="https://i.postimg.cc/PJGLxqCw/Jorge-3.png"
             alt="Jorge Enrique Carvajal"
-            width={128} // Increased from 96 to 128 (w-24 to w-32)
-            height={128} // Increased from 96 to 128 (h-24 to h-32)
-            className="rounded-full object-cover shadow-md" // Removed border-2 border-primary
+            width={160} // Increased from 128 to 160
+            height={160} // Increased from 128 to 160
+            className="rounded-full object-cover" // Removed shadow-md
             priority // Optional: if the image is above the fold
             data-ai-hint="portrait person"
           />
