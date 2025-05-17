@@ -65,6 +65,7 @@ export function RsvpForm() {
     defaultValues: {
       fullName: "",
       whatsapp: "",
+      attending: undefined, // Ensure attending is initially undefined or a valid enum value if you have a default
       guestNames: [],
     },
   });
@@ -81,7 +82,7 @@ export function RsvpForm() {
       remove(); // Removes all guest name fields
     }
   }, [watchAttending, remove]);
-  
+
   useEffect(() => {
     if (state.message) {
       if (state.success) {
@@ -91,7 +92,12 @@ export function RsvpForm() {
           variant: "default",
           action: <CheckCircle2 className="text-green-500" />,
         });
-        form.reset(); // This will also reset the field array
+        form.reset({ // Reset with default values, ensures attending is also reset
+          fullName: "",
+          whatsapp: "",
+          attending: undefined,
+          guestNames: []
+        });
       } else {
         toast({
           title: "Error en la Confirmación",
@@ -102,7 +108,7 @@ export function RsvpForm() {
         if (state.errors) {
           type FormFieldKey = keyof RsvpFormData | "_form";
           (Object.keys(state.errors) as FormFieldKey[]).forEach((key) => {
-            const fieldKey = key === "_form" ? undefined : key; 
+            const fieldKey = key === "_form" ? undefined : key;
             if (fieldKey && state.errors && state.errors[fieldKey]) {
                  const errorMessages = state.errors[fieldKey];
                  let messageToShow: string | undefined;
@@ -114,7 +120,7 @@ export function RsvpForm() {
 
                  if (messageToShow) {
                     form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: messageToShow });
-                 } else if (typeof errorMessages === 'string') { 
+                 } else if (typeof errorMessages === 'string') {
                     form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: errorMessages });
                  }
             }
@@ -123,7 +129,7 @@ export function RsvpForm() {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, toast]); 
+  }, [state, toast]); // form.reset is stable, no need to add `form` to deps
 
   return (
     <Card className="shadow-xl">
@@ -132,19 +138,13 @@ export function RsvpForm() {
       </CardHeader>
       <Form {...form}>
         <form
-          action={formAction} // Pass the server action directly here
+          action={formAction}
           onSubmit={form.handleSubmit(
             () => {
-              // This callback is for successful client-side validation.
-              // react-hook-form will allow the form submission to proceed,
-              // and React will invoke the server action in `action` prop.
-              // No need to manually call formAction(formData) here.
-              // console.log("Client-side validation successful. Submitting to server action.");
+              // Client-side validation successful, server action will proceed.
             },
             (errors) => {
-              // This callback is for failed client-side validation.
-              // react-hook-form automatically updates formState.errors,
-              // which will be picked up by FormMessage components.
+              // Client-side validation failed.
               console.log("Client-side validation failed:", errors);
             }
           )}
@@ -188,17 +188,17 @@ export function RsvpForm() {
                   <FormControl>
                     <RadioGroup
                       onValueChange={(value: "yes" | "no") => {
-                        field.onChange(value); 
+                        field.onChange(value);
                         if (value === "no") {
-                          remove(); 
+                          remove();
                         }
                       }}
                       value={field.value}
-                      className="flex flex-col space-y-3" 
+                      className="flex flex-col space-y-3"
                     >
                       <FormItem className="border rounded-lg hover:bg-muted/80 transition-colors">
-                        <FormLabel 
-                          htmlFor="attending-yes" 
+                        <FormLabel
+                          htmlFor="attending-yes"
                           className="flex w-full cursor-pointer flex-row items-center space-x-4 p-4 text-base font-medium"
                         >
                           <RadioGroupItem value="yes" id="attending-yes" className="h-6 w-6" />
@@ -206,8 +206,8 @@ export function RsvpForm() {
                         </FormLabel>
                       </FormItem>
                       <FormItem className="border rounded-lg hover:bg-muted/80 transition-colors">
-                        <FormLabel 
-                          htmlFor="attending-no" 
+                        <FormLabel
+                          htmlFor="attending-no"
                           className="flex w-full cursor-pointer flex-row items-center space-x-4 p-4 text-base font-medium"
                         >
                           <RadioGroupItem value="no" id="attending-no" className="h-6 w-6" />
@@ -273,15 +273,14 @@ export function RsvpForm() {
         </form>
       </Form>
       {state.success && state.message && (
-         <div className="p-4 mt-4 text-center bg-green-100 border border-green-300 text-green-700 rounded-md">
+         <div className="p-4 mt-4 text-center bg-green-100 border border-green-300 text-green-700 rounded-md mx-6 mb-2"> {/* Added mx-6 mb-2 for better spacing */}
             <p>{state.message}</p>
          </div>
       )}
-      <div className="p-6 text-center text-sm text-muted-foreground">
+      <div className="p-6 pt-0 text-center text-sm text-muted-foreground"> {/* Changed p-6 to pt-0 if success message is shown */}
         <p className="font-semibold">Aviso Importante:</p>
         <p>Una vez envíes tu confirmación, recibirás un mensaje agradeciendo tu respuesta. ¡Esperamos contar contigo para celebrar a Jorge Enrique!</p>
       </div>
     </Card>
   );
 }
-
