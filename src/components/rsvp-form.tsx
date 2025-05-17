@@ -186,21 +186,21 @@ export function RsvpForm() {
                         }
                       }}
                       value={field.value}
-                      className="flex flex-col space-y-1"
+                      className="flex flex-col space-y-3" // Increased spacing
                     >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormItem className="border p-4 rounded-lg hover:bg-muted/80 transition-colors flex flex-row items-center space-x-4">
                         <FormControl>
-                          <RadioGroupItem value="yes" id="attending-yes" />
+                          <RadioGroupItem value="yes" id="attending-yes" className="h-6 w-6" />
                         </FormControl>
-                        <FormLabel htmlFor="attending-yes" className="font-normal cursor-pointer">
+                        <FormLabel htmlFor="attending-yes" className="text-base font-medium cursor-pointer">
                           Sí, ¡allí estaré!
                         </FormLabel>
                       </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormItem className="border p-4 rounded-lg hover:bg-muted/80 transition-colors flex flex-row items-center space-x-4">
                         <FormControl>
-                          <RadioGroupItem value="no" id="attending-no" />
+                          <RadioGroupItem value="no" id="attending-no" className="h-6 w-6" />
                         </FormControl>
-                        <FormLabel htmlFor="attending-no" className="font-normal cursor-pointer">
+                        <FormLabel htmlFor="attending-no" className="text-base font-medium cursor-pointer">
                           No podré asistir.
                         </FormLabel>
                       </FormItem>
@@ -276,5 +276,3 @@ export function RsvpForm() {
     </Card>
   );
 }
-
-    
