@@ -9,13 +9,10 @@ console.log("!!!!!!!! MODULE actions.ts LOADED ON SERVER ( dovrebbe apparire all
 
 const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRmBhm6Yp-uh89kSyw6nAjI-ZpTzml0RpEJHLtvXBu03jFSURjDX4IDOnzSc25V6VFwQ/exec";
 
-// Changed formData: FormData to data: z.infer<typeof rsvpFormSchema>
 export async function submitRsvp(prevState: RsvpFormState, data: z.infer<typeof rsvpFormSchema>): Promise<RsvpFormState> {
   console.log("!!!!!!!! SERVER ACTION submitRsvp ENTERED ( dovrebbe apparire ad ogni invio ) !!!!!!!!");
-  // Now receiving a data object directly from react-hook-form's handleSubmit
   console.log("[submitRsvp Action] Received data object:", data);
 
-  // Zod validation now uses the data object directly
   const validatedFields = rsvpFormSchema.safeParse(data);
 
   if (!validatedFields.success) {
@@ -28,16 +25,12 @@ export async function submitRsvp(prevState: RsvpFormState, data: z.infer<typeof 
   }
   console.log("[submitRsvp Action] Zod validation successful. Data:", validatedFields.data);
 
-  // Use the validated data. guestNames will be an array of strings.
   const dataToSubmit = {
     ...validatedFields.data,
-    // Ensure guestNames is an array of strings, filtering out any empty strings if Zod didn't catch them
-    // (though Zod's .min(1) on guestName strings should prevent fully empty strings if a field was added)
     guestNames: validatedFields.data.guestNames ? validatedFields.data.guestNames.filter(name => typeof name === 'string' && name.trim() !== "") : [],
   };
 
 
-  // Check if the URL is the placeholder. If it is, simulate success without actual submission.
   if (GOOGLE_SHEET_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE" || !GOOGLE_SHEET_WEB_APP_URL.startsWith("https://script.google.com/")) {
     const warningMessage = GOOGLE_SHEET_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"
       ? "La integración con Google Sheets no está configurada. Reemplaza la URL placeholder en actions.ts."
@@ -45,7 +38,7 @@ export async function submitRsvp(prevState: RsvpFormState, data: z.infer<typeof 
     console.warn(`[submitRsvp Action] RSVP Data (not sent, ${warningMessage}):`, dataToSubmit);
     
     const simulatedThankYouMessage = dataToSubmit.attending === "yes"
-      ? "¡Gracias por confirmar tu asistencia! Nos vemos en la celebración."
+      ? "¡Gracias por confirmar tu asistencia! Te esperamos con alegría en la celebración."
       : "Lamentamos que no puedas asistir. ¡Gracias por responder!";
 
     return {
@@ -63,7 +56,7 @@ export async function submitRsvp(prevState: RsvpFormState, data: z.infer<typeof 
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(dataToSubmit), // Send validated data object
+      body: JSON.stringify(dataToSubmit), 
     });
     console.log("[submitRsvp Action] Google Sheet API response status:", response.status);
 
@@ -88,7 +81,7 @@ export async function submitRsvp(prevState: RsvpFormState, data: z.infer<typeof 
     console.log("[submitRsvp Action] Google Sheet API Success:", result);
 
     const thankYouMessage = dataToSubmit.attending === "yes"
-      ? "¡Gracias por confirmar tu asistencia! Nos vemos en la celebración."
+      ? "¡Gracias por confirmar tu asistencia! Te esperamos con alegría en la celebración."
       : "Lamentamos que no puedas asistir. ¡Gracias por responder!";
 
     return {

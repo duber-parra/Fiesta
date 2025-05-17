@@ -10,14 +10,14 @@ import { UserPlus, Send, Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"; // Form (FormProvider) is used via <FormProvider>
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { submitRsvp } from "@/app/actions";
 import type { RsvpFormState } from "@/lib/form-schema";
 import { rsvpFormSchema } from "@/lib/form-schema";
 import { useToast } from "@/hooks/use-toast";
-
+import { Confetti } from "@/components/confetti"; // Import Confetti
 
 type RsvpFormData = z.infer<typeof rsvpFormSchema>;
 
@@ -50,13 +50,15 @@ function SubmitButton() {
 export function RsvpForm() {
   const [state, formAction] = useActionState(submitRsvp, initialState);
   const { toast } = useToast();
+  const [showPostSubmitConfetti, setShowPostSubmitConfetti] = useState(false);
+  const [confettiKey, setConfettiKey] = useState(0);
 
   const form = useForm<RsvpFormData>({
     resolver: zodResolver(rsvpFormSchema),
     defaultValues: {
       fullName: "",
       whatsapp: "",
-      attending: undefined, // Zod schema handles undefined for enum
+      attending: undefined, 
       guestNames: [],
     },
   });
@@ -70,12 +72,14 @@ export function RsvpForm() {
 
   useEffect(() => {
     if (watchAttending === "no") {
-      remove(); // Clears all guest name fields
+      remove(); 
     }
   }, [watchAttending, remove]);
 
-  // Effect to handle server action response (state updates)
   useEffect(() => {
+    let reloadTimer: NodeJS.Timeout;
+    let confettiHideTimer: NodeJS.Timeout;
+
     if (state.message) {
       if (state.success) {
         toast({
@@ -84,12 +88,25 @@ export function RsvpForm() {
           variant: "default",
           action: <CheckCircle2 className="text-green-500" />,
         });
-        form.reset({ // Reset form on successful submission
+        form.reset({ 
           fullName: "",
           whatsapp: "",
           attending: undefined,
           guestNames: []
         });
+
+        // Trigger confetti and page reload
+        setShowPostSubmitConfetti(true);
+        setConfettiKey(prevKey => prevKey + 1);
+
+        confettiHideTimer = setTimeout(() => {
+          setShowPostSubmitConfetti(false);
+        }, 7000); // Hide confetti after 7 seconds (animation duration + buffer)
+
+        reloadTimer = setTimeout(() => {
+          window.location.reload();
+        }, 5000); // Reload page after 5 seconds
+
       } else {
         toast({
           title: "Error en la Confirmación",
@@ -97,15 +114,13 @@ export function RsvpForm() {
           variant: "destructive",
           action: <XCircle className="text-red-500" />,
         });
-        // Populate form errors from server action state
         if (state.errors) {
           type FormFieldKey = keyof RsvpFormData | "_form";
           (Object.keys(state.errors) as FormFieldKey[]).forEach((key) => {
-            const fieldKey = key === "_form" ? undefined : key; // _form errors are handled separately
+            const fieldKey = key === "_form" ? undefined : key; 
             if (fieldKey && state.errors && state.errors[fieldKey]) {
                  const errorMessages = state.errors[fieldKey];
                  let messageToShow: string | undefined;
-                 // Handle complex Zod error structures for arrays/objects
                  if (typeof errorMessages === 'object' && errorMessages !== null && !Array.isArray(errorMessages)) {
                     messageToShow = (errorMessages as any)._errors?.[0] || Object.values(errorMessages as any).flat()?.[0] as string | undefined;
                  } else if (Array.isArray(errorMessages)) {
@@ -114,7 +129,7 @@ export function RsvpForm() {
 
                  if (messageToShow) {
                     form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: messageToShow });
-                 } else if (typeof errorMessages === 'string') { // Fallback for simple string errors
+                 } else if (typeof errorMessages === 'string') { 
                     form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: errorMessages });
                  }
             }
@@ -122,14 +137,16 @@ export function RsvpForm() {
         }
       }
     }
+    return () => { // Cleanup timers
+      clearTimeout(reloadTimer);
+      clearTimeout(confettiHideTimer);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]); // Removed form.reset and form.setError from deps as they might cause loops if state changes trigger them and they change state
+  }, [state, toast]); // form.reset removed from deps as per previous fix
 
 
   const processForm = async (data: RsvpFormData) => {
     console.log("[RsvpForm] Client-side validation passed. Data for server action:", data);
-    // Directly call formAction with the data object.
-    // The server action `submitRsvp` will now receive this object.
     formAction(data);
   };
 
@@ -140,12 +157,13 @@ export function RsvpForm() {
 
   return (
     <Card className="shadow-xl">
+      {showPostSubmitConfetti && <Confetti key={confettiKey} />}
       <CardHeader>
         <CardTitle className="text-2xl font-semibold text-center text-primary">Formulario de Confirmación</CardTitle>
       </CardHeader>
       <FormProvider {...form}>
         <form
-          onSubmit={form.handleSubmit(processForm, onInvalid)} // Use RHF handleSubmit
+          onSubmit={form.handleSubmit(processForm, onInvalid)}
           className="space-y-6"
         >
           <CardContent className="space-y-4">
@@ -193,7 +211,6 @@ export function RsvpForm() {
                       }}
                       value={field.value}
                       className="flex flex-col space-y-3"
-                      // name={field.name} // RHF Controller handles name internally
                     >
                       <FormItem className="border rounded-lg hover:bg-muted/80 transition-colors">
                         <FormLabel
@@ -254,7 +271,7 @@ export function RsvpForm() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => append("")} // For string array, append a string. Zod min(1) will catch empty.
+                  onClick={() => append("")}
                   className="mt-2 flex items-center"
                 >
                   <UserPlus className="mr-2 h-4 w-4" />
