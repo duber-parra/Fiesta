@@ -1,7 +1,7 @@
 import type {Metadata} from 'next';
 import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
-import { Toaster } from '@/components/ui/toaster'; // Import Toaster
+import { Toaster } from '@/components/ui/toaster';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -24,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es"> {/* Changed lang to Spanish */}
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}> {/* Added font-sans for fallback */}
+    <html lang="es">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}>
         {children}
         <Toaster /> {/* Add Toaster here */}
       </body>
