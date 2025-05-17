@@ -4,7 +4,7 @@
 import type { ChangeEvent} from 'react';
 import { useState, useEffect, useActionState } from "react";
 // Removed useFormStatus from react-dom, useActionState handles pending state via form.formState.isSubmitting or its own pending value if needed
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useFormContext } from "react-hook-form"; // Added useFormContext
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod"; // Import z from zod for type inference
 import { UserPlus, Send, Loader2, CheckCircle2, XCircle } from "lucide-react";
@@ -15,8 +15,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { submitRsvp } from "@/app/actions";
-import type { RsvpFormState } from "@/lib/form-schema"; // Updated import path
-import { rsvpFormSchema } from "@/lib/form-schema"; // Updated import path
+import type { RsvpFormState } from "@/lib/form-schema";
+import { rsvpFormSchema } from "@/lib/form-schema";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -29,8 +29,6 @@ const initialState: RsvpFormState = {
 };
 
 function SubmitButton() {
-  // const { pending } = useFormStatus(); // Can be replaced by form.formState.isSubmitting if using react-hook-form's submission state
-  // For useActionState, pending state is available from its return if needed, but react-hook-form also provides formState.isSubmitting
   const { formState: { isSubmitting } } = useFormContext<RsvpFormData>(); // Get isSubmitting from react-hook-form context
 
   return (
@@ -130,16 +128,14 @@ export function RsvpForm() {
       <CardHeader>
         <CardTitle className="text-2xl font-semibold text-center text-primary">Formulario de Confirmación</CardTitle>
       </CardHeader>
-      <Form {...form}> {/* Pass form methods to FormProvider */}
+      <Form {...form}> {/* This 'Form' is FormProvider from @/components/ui/form */}
         <form
           action={formAction} // Server action
           onSubmit={form.handleSubmit(
             () => {
-              // Client-side validation passed. Native form submission (server action) will proceed.
               console.log("[RsvpForm] Client-side validation passed. Native form submission should proceed.");
             },
             (errors) => {
-              // Client-side validation failed. react-hook-form handles displaying errors.
               console.error("[RsvpForm] Client-side validation failed:", errors);
             }
           )}
@@ -223,8 +219,8 @@ export function RsvpForm() {
                   <FormField
                     control={form.control}
                     key={item.id}
-                    name={`guestNames.${index}`} // No .value here for react-hook-form
-                    render={({ field: guestField }) => ( // Changed field to guestField to avoid conflict
+                    name={`guestNames.${index}`}
+                    render={({ field: guestField }) => (
                       <FormItem>
                         <div className="flex items-center space-x-2">
                           <FormControl>
@@ -250,7 +246,7 @@ export function RsvpForm() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => append("")} // Pass an empty string or an object { name: "" } if your schema expects objects
+                  onClick={() => append("")}
                   className="mt-2 flex items-center"
                 >
                   <UserPlus className="mr-2 h-4 w-4" />
@@ -279,3 +275,5 @@ export function RsvpForm() {
     </Card>
   );
 }
+
+    
