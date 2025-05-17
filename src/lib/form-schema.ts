@@ -18,9 +18,9 @@ export const rsvpFormSchema = z.object({
   attending: z.enum(["yes", "no"], {
     required_error: "Por favor selecciona si asistirás o no.",
   }),
-  guestNames: z.array(
+  guestNames: z.array( // Made non-optional
     z.string().min(1, "El nombre del acompañante no puede estar vacío si se añade el campo.")
-  ).optional(),
+  ),
 });
 
 export type RsvpFormState = {

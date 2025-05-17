@@ -44,8 +44,7 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
     fullName: formData.get("fullName"),
     whatsapp: formData.get("whatsapp"),
     attending: formData.get("attending"),
-    // Only include guestNames if there are actual names, otherwise Zod might fail if it's an empty array but expecting undefined
-    guestNames: guestNamesArray.length > 0 ? guestNamesArray : undefined,
+    guestNames: guestNamesArray, // Pass array directly, even if empty
   };
   console.log("[submitRsvp Action] Parsed rawFormData for Zod:", rawFormData);
 
