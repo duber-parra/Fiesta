@@ -37,7 +37,7 @@ export function EventDetails() {
           <h3 className="text-xl font-semibold text-center text-primary mb-3">Detalles del Evento:</h3>
           <div className="flex items-start space-x-3">
             <CalendarDays className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-            <p><span className="font-semibold">Fecha:</span> Domingo, 33 de Junio de 2025</p>
+            <p><span className="font-semibold">Fecha:</span> Domingo, 23 de Junio de 2025</p>
           </div>
           <div className="flex items-start space-x-3">
             <Clock3 className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
