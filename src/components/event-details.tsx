@@ -12,7 +12,7 @@ export function EventDetails() {
         <div className="flex justify-center items-center mb-4">
           {/* Replace PartyPopper with Image component */}
           <Image
-            src="https://i.postimg.cc/ZRr0BcPb/Jorge-3.jpg"
+            src="https://i.postimg.cc/PJGLxqCw/Jorge-3.png"
             alt="Jorge Enrique Carvajal"
             width={96} // w-24 (96px)
             height={96} // h-24 (96px)
