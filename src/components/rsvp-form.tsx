@@ -142,7 +142,7 @@ export function RsvpForm() {
       clearTimeout(confettiHideTimer);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, toast]); // form.reset removed from deps as per previous fix
+  }, [state, toast, form.reset]);
 
 
   const processForm = async (data: RsvpFormData) => {
@@ -188,7 +188,7 @@ export function RsvpForm() {
                 <FormItem>
                   <FormLabel>Número de WhatsApp (Opcional)</FormLabel>
                   <FormControl>
-                    <Input type="tel" placeholder="Ej: +57 300 123 4567" {...field} />
+                    <Input type="tel" placeholder="Ej: 300 123 4567" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -300,3 +300,4 @@ export function RsvpForm() {
     </Card>
   );
 }
+
