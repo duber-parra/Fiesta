@@ -15,7 +15,7 @@ export function EventDetails() {
             alt="Jorge Enrique Carvajal"
             width={160} // Increased from 128 to 160
             height={160} // Increased from 128 to 160
-            className="rounded-full object-cover" // Removed shadow-md
+            className="object-cover" // Removed rounded-full and shadow-md
             priority // Optional: if the image is above the fold
             data-ai-hint="portrait person"
           />
