@@ -23,27 +23,26 @@ export type RsvpFormState = {
   submittedData?: z.infer<typeof rsvpFormSchema>;
 };
 
+// !!! IMPORTANT: REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL !!!
+const GOOGLE_SHEET_WEB_APP_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"; 
+// Example: "https://script.google.com/macros/s/ABCDEFG1234567/exec"
+
 export async function submitRsvp(prevState: RsvpFormState, formData: FormData): Promise<RsvpFormState> {
   
   const tempGuestNames: { index: number, value: string }[] = [];
   for (const [key, value] of formData.entries()) {
-    // react-hook-form names field array inputs like "guestNames.0", "guestNames.1", etc.
     const match = key.match(/^guestNames\.(\d+)$/);
     if (match && typeof value === 'string') {
       tempGuestNames.push({ index: parseInt(match[1], 10), value: value });
     }
   }
-  // Sort by index to ensure correct order, as FormData iteration order isn't strictly guaranteed for all keys
   tempGuestNames.sort((a, b) => a.index - b.index);
-  const guestNamesArray = tempGuestNames.map(item => item.value);
-  // Empty strings submitted from empty fields will be validated by Zod's .min(1)
+  const guestNamesArray = tempGuestNames.map(item => item.value).filter(name => name.trim() !== ""); // Filter out empty strings
 
   const rawFormData = {
     fullName: formData.get("fullName"),
     whatsapp: formData.get("whatsapp"),
     attending: formData.get("attending"),
-    // Pass the array; if no guests were added, it will be empty, which is fine for .optional()
-    // If guests were added but names are empty, Zod's .min(1) on the string will catch it.
     guestNames: guestNamesArray.length > 0 ? guestNamesArray : undefined,
   };
 
@@ -57,25 +56,64 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
     };
   }
 
-  const data = validatedFields.data;
+  const dataToSubmit = validatedFields.data;
 
-  // In a real application, you would send this data to a Google Sheet, database, email, etc.
-  // For this example, we'll just log it to the server console.
-  console.log("RSVP Submitted:", data);
-
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
-  // You can customize the success message based on attendance
-  const thankYouMessage = data.attending === "yes" 
-    ? "¡Gracias por confirmar tu asistencia! Nos vemos en la celebración."
-    : "Lamentamos que no puedas asistir. ¡Gracias por responder!";
-
-  return {
-    message: `${thankYouMessage} Esperamos que todo marche bien para ti.`,
-    success: true,
-    submittedData: data,
-  };
-}
-
+  // Check if the placeholder URL is still there
+  if (GOOGLE_SHEET_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
+    console.warn("RSVP Data (not sent, using placeholder URL):", dataToSubmit);
+    const thankYouMessage = dataToSubmit.attending === "yes" 
+      ? "¡Gracias por confirmar tu asistencia! Nos vemos en la celebración."
+      : "Lamentamos que no puedas asistir. ¡Gracias por responder!";
     
+    return {
+      message: `${thankYouMessage} (Nota: La integración con Google Sheets no está configurada completamente. Reemplaza la URL en actions.ts).`,
+      success: true, // Simulate success for UI purposes
+      submittedData: dataToSubmit,
+    };
+  }
+
+  try {
+    const response = await fetch(GOOGLE_SHEET_WEB_APP_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dataToSubmit), // Send all validated data
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: "Error al contactar el servicio de Google Sheets." }));
+      console.error("Google Sheet API Error:", errorData);
+      return {
+        message: `Hubo un problema al guardar tu confirmación en Google Sheets: ${errorData.message || response.statusText}. Por favor, intenta de nuevo o contacta al organizador.`,
+        success: false,
+        errors: { _form: [`Error del servidor: ${errorData.message || response.statusText}`] },
+      };
+    }
+
+    const result = await response.json();
+    console.log("Google Sheet API Success:", result);
+
+    const thankYouMessage = dataToSubmit.attending === "yes" 
+      ? "¡Gracias por confirmar tu asistencia! Nos vemos en la celebración."
+      : "Lamentamos que no puedas asistir. ¡Gracias por responder!";
+
+    return {
+      message: `${thankYouMessage} Tu respuesta ha sido registrada.`,
+      success: true,
+      submittedData: dataToSubmit,
+    };
+
+  } catch (error) {
+    console.error("Network or other error submitting to Google Sheet:", error);
+    let errorMessage = "Ocurrió un error de red o desconocido al enviar tu confirmación.";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return {
+      message: `Error: ${errorMessage}. Por favor, intenta de nuevo o contacta al organizador.`,
+      success: false,
+      errors: { _form: [errorMessage] },
+    };
+  }
+}
