@@ -9,7 +9,7 @@ export function EventDetails() {
   return (
     <Card className="shadow-xl">
       <CardHeader className="text-center">
-        <div className="flex justify-center items-center mb-4">
+        <div className="flex justify-center items-center mb-2"> {/* Changed mb-4 to mb-2 */}
           <Image
             src="https://i.postimg.cc/PJGLxqCw/Jorge-3.png"
             alt="Jorge Enrique Carvajal"
