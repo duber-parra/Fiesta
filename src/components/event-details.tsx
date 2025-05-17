@@ -51,7 +51,7 @@ export function EventDetails() {
           </div>
         </div>
 
-        <div className="aspect-w-16 aspect-h-9 mt-6 rounded-lg overflow-hidden shadow-md">
+        <div className="aspect-w-16 aspect-h-9 mt-6 overflow-hidden shadow-md">
           <iframe
             src={eventLocationUrl}
             width="100%"
@@ -61,7 +61,6 @@ export function EventDetails() {
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
             title="Ubicación del evento"
-            className="rounded-lg"
           ></iframe>
         </div>
         
