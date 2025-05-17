@@ -5,10 +5,12 @@ import type { RsvpFormState } from "@/lib/form-schema";
 import { rsvpFormSchema } from "@/lib/form-schema";
 import type { z } from "zod";
 
+console.log("!!!!!!!! MODULE actions.ts LOADED ON SERVER ( dovrebbe apparire all'avvio del server o al primo accesso ) !!!!!!!!");
 
 const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRmBhm6Yp-uh89kSyw6nAjI-ZpTzml0RpEJHLtvXBu03jFSURjDX4IDOnzSc25V6VFwQ/exec";
 
 export async function submitRsvp(prevState: RsvpFormState, formData: FormData): Promise<RsvpFormState> {
+  console.log("!!!!!!!! SERVER ACTION submitRsvp ENTERED ( dovrebbe apparire ad ogni invio ) !!!!!!!!");
   console.log("[submitRsvp Action] Received formData. Full Name:", formData.get("fullName"));
 
   // Log all FormData entries for detailed debugging
@@ -44,7 +46,7 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
     fullName: formData.get("fullName"),
     whatsapp: formData.get("whatsapp"),
     attending: formData.get("attending"),
-    guestNames: guestNamesArray, // Pass array directly, even if empty
+    guestNames: guestNamesArray, // Pass array directly
   };
   console.log("[submitRsvp Action] Parsed rawFormData for Zod:", rawFormData);
 
