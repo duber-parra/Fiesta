@@ -3,14 +3,14 @@
 
 import type { ChangeEvent} from 'react';
 import { useState, useEffect, useActionState } from "react";
-import { useForm, useFieldArray, useFormContext } from "react-hook-form";
+import { useForm, useFieldArray, useFormContext, FormProvider } from "react-hook-form"; // Added FormProvider and useFormContext
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { UserPlus, Send, Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"; // Form is already FormProvider
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { submitRsvp } from "@/app/actions";
@@ -28,7 +28,7 @@ const initialState: RsvpFormState = {
 };
 
 function SubmitButton() {
-  const { formState: { isSubmitting } } = useFormContext<RsvpFormData>();
+  const { formState: { isSubmitting } } = useFormContext<RsvpFormData>(); // Get isSubmitting from react-hook-form context
 
   return (
     <Button type="submit" disabled={isSubmitting} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
@@ -127,19 +127,20 @@ export function RsvpForm() {
       <CardHeader>
         <CardTitle className="text-2xl font-semibold text-center text-primary">Formulario de Confirmación</CardTitle>
       </CardHeader>
-      <Form {...form}>
+      <FormProvider {...form}> {/* Ensure FormProvider wraps the form */}
         <form
-          action={formAction}
-          onSubmit={form.handleSubmit(
-            () => {
-              // Client-side validation passed. Native form submission will proceed, triggering `formAction`.
-              console.log("[RsvpForm] Client-side validation passed. Native form submission should proceed.");
-            },
-            (errors) => {
-              // Client-side validation failed. react-hook-form will display errors.
-              console.error("[RsvpForm] Client-side validation failed:", JSON.stringify(errors, null, 2));
-            }
-          )}
+          action={formAction} // Directly use the server action
+          // Remove onSubmit for this test
+          // onSubmit={form.handleSubmit(
+          //   () => {
+          //     // Client-side validation passed. Native form submission will proceed, triggering `formAction`.
+          //     console.log("[RsvpForm] Client-side validation passed. Native form submission should proceed.");
+          //   },
+          //   (errors) => {
+          //     // Client-side validation failed. react-hook-form will display errors.
+          //     console.error("[RsvpForm] Client-side validation failed:", JSON.stringify(errors, null, 2));
+          //   }
+          // )}
           className="space-y-6"
         >
           <CardContent className="space-y-4">
@@ -247,7 +248,7 @@ export function RsvpForm() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => append("")} // Add an empty string for a new guest
+                  onClick={() => append({ value: "" } as any)} // Adjust for react-hook-form v7+, append an object
                   className="mt-2 flex items-center"
                 >
                   <UserPlus className="mr-2 h-4 w-4" />
@@ -263,7 +264,7 @@ export function RsvpForm() {
             )}
           </CardFooter>
         </form>
-      </Form>
+      </FormProvider>
       {state.success && state.message && (
          <div className="p-4 mt-4 text-center bg-green-100 border border-green-300 text-green-700 rounded-md mx-6 mb-2">
             <p>{state.message}</p>
@@ -276,3 +277,4 @@ export function RsvpForm() {
     </Card>
   );
 }
+
