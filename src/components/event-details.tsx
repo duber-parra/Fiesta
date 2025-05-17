@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PartyPopper, CalendarDays, Clock3, MapPin, Gift } from "lucide-react";
 
@@ -37,9 +38,6 @@ export function EventDetails() {
             <MapPin className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
             <div>
                 <p><span className="font-semibold">Lugar:</span> Cabañas Cafeteras Cerritos, Pereira.</p>
-                <p className="text-sm text-muted-foreground">
-                    (Nota: La URL del mapa que proporcionaste no arrojó un lugar específico. Te recomendamos obtener y agregar aquí una dirección más detallada o un enlace a un mapa que señale la ubicación exacta en Pereira para facilitar la llegada de tus invitados).
-                </p>
             </div>
           </div>
         </div>
