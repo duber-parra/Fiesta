@@ -2,11 +2,11 @@
 "use client";
 
 import type { ChangeEvent} from 'react';
-import { useState, useEffect, useActionState } from "react"; // Updated import
-import { useFormStatus } from "react-dom";
+import { useState, useEffect, useActionState } from "react";
+// Removed useFormStatus from react-dom, useActionState handles pending state via form.formState.isSubmitting or its own pending value if needed
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import type { z } from "zod"; // Import z from zod for type inference
 import { UserPlus, Send, Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -14,34 +14,28 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { submitRsvp, type RsvpFormState } from "@/app/actions";
+import { submitRsvp } from "@/app/actions";
+import type { RsvpFormState } from "@/lib/form-schema"; // Updated import path
+import { rsvpFormSchema } from "@/lib/form-schema"; // Updated import path
 import { useToast } from "@/hooks/use-toast";
 
-const rsvpFormSchema = z.object({
-  fullName: z.string().min(1, { message: "El nombre completo es requerido." }),
-  whatsapp: z.string().optional().refine(val => !val || /^[0-9+\-\s()]*$/.test(val), {
-    message: "Número de WhatsApp inválido.",
-  }),
-  attending: z.enum(["yes", "no"], {
-    required_error: "Por favor selecciona si asistirás o no.",
-  }),
-  guestNames: z.array(
-    z.string().min(1, { message: "El nombre del acompañante no puede estar vacío si se añade el campo." })
-  ).optional(),
-});
 
 type RsvpFormData = z.infer<typeof rsvpFormSchema>;
 
 const initialState: RsvpFormState = {
   message: "",
   success: false,
+  errors: {},
 };
 
 function SubmitButton() {
-  const { pending } = useFormStatus();
+  // const { pending } = useFormStatus(); // Can be replaced by form.formState.isSubmitting if using react-hook-form's submission state
+  // For useActionState, pending state is available from its return if needed, but react-hook-form also provides formState.isSubmitting
+  const { formState: { isSubmitting } } = useFormContext<RsvpFormData>(); // Get isSubmitting from react-hook-form context
+
   return (
-    <Button type="submit" disabled={pending} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-      {pending ? (
+    <Button type="submit" disabled={isSubmitting} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+      {isSubmitting ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Enviando...
@@ -65,7 +59,7 @@ export function RsvpForm() {
     defaultValues: {
       fullName: "",
       whatsapp: "",
-      attending: undefined, // Ensure attending is initially undefined or a valid enum value if you have a default
+      attending: undefined,
       guestNames: [],
     },
   });
@@ -79,7 +73,7 @@ export function RsvpForm() {
 
   useEffect(() => {
     if (watchAttending === "no") {
-      remove(); // Removes all guest name fields
+      remove();
     }
   }, [watchAttending, remove]);
 
@@ -92,7 +86,7 @@ export function RsvpForm() {
           variant: "default",
           action: <CheckCircle2 className="text-green-500" />,
         });
-        form.reset({ // Reset with default values, ensures attending is also reset
+        form.reset({
           fullName: "",
           whatsapp: "",
           attending: undefined,
@@ -129,21 +123,23 @@ export function RsvpForm() {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, toast]); 
+  }, [state, toast, form]);
 
   return (
     <Card className="shadow-xl">
       <CardHeader>
         <CardTitle className="text-2xl font-semibold text-center text-primary">Formulario de Confirmación</CardTitle>
       </CardHeader>
-      <Form {...form}>
+      <Form {...form}> {/* Pass form methods to FormProvider */}
         <form
-          action={formAction}
+          action={formAction} // Server action
           onSubmit={form.handleSubmit(
             () => {
+              // Client-side validation passed. Native form submission (server action) will proceed.
               console.log("[RsvpForm] Client-side validation passed. Native form submission should proceed.");
             },
             (errors) => {
+              // Client-side validation failed. react-hook-form handles displaying errors.
               console.error("[RsvpForm] Client-side validation failed:", errors);
             }
           )}
@@ -227,8 +223,8 @@ export function RsvpForm() {
                   <FormField
                     control={form.control}
                     key={item.id}
-                    name={`guestNames.${index}`}
-                    render={({ field: guestField }) => (
+                    name={`guestNames.${index}`} // No .value here for react-hook-form
+                    render={({ field: guestField }) => ( // Changed field to guestField to avoid conflict
                       <FormItem>
                         <div className="flex items-center space-x-2">
                           <FormControl>
@@ -254,7 +250,7 @@ export function RsvpForm() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => append("")}
+                  onClick={() => append("")} // Pass an empty string or an object { name: "" } if your schema expects objects
                   className="mt-2 flex items-center"
                 >
                   <UserPlus className="mr-2 h-4 w-4" />

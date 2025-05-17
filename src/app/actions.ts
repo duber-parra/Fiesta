@@ -1,29 +1,12 @@
 
 "use server";
 
-import { z } from "zod";
+import type { RsvpFormState } from "@/lib/form-schema";
+import { rsvpFormSchema } from "@/lib/form-schema";
+import type { z } from "zod";
 
-const rsvpFormSchema = z.object({
-  fullName: z.string().min(1, "El nombre completo es requerido."),
-  whatsapp: z.string().optional().refine(val => !val || /^[0-9+\-\s()]*$/.test(val), {
-    message: "Número de WhatsApp inválido.",
-  }),
-  attending: z.enum(["yes", "no"]),
-  guestNames: z.array(
-    z.string().min(1, "El nombre del acompañante no puede estar vacío si se añade el campo.")
-  ).optional(),
-});
 
-export type RsvpFormState = {
-  message: string;
-  success: boolean;
-  // This type needs to accommodate Zod's fieldErrors structure for arrays, 
-  // which can be { _errors?: string[], "0"?: string[], "1"?: string[] }
-  errors?: Partial<Record<keyof z.infer<typeof rsvpFormSchema>, any | string[]>> & { _form?: string[] };
-  submittedData?: z.infer<typeof rsvpFormSchema>;
-};
-
-const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRmBhm6Yp-uh89kSyw6nAjI-ZpTzml0RpEJHLtvXBu03jFSURjDX4IDOnzSc25V6VFwQ/exec"; 
+const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRmBhm6Yp-uh89kSyw6nAjI-ZpTzml0RpEJHLtvXBu03jFSURjDX4IDOnzSc25V6VFwQ/exec";
 
 export async function submitRsvp(prevState: RsvpFormState, formData: FormData): Promise<RsvpFormState> {
   console.log("[submitRsvp Action] Received formData. Full Name:", formData.get("fullName"));
@@ -60,15 +43,16 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
 
   const dataToSubmit = validatedFields.data;
 
+  // Check if the URL is the placeholder. If it is, simulate success without actual submission.
   if (GOOGLE_SHEET_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
     console.warn("[submitRsvp Action] RSVP Data (not sent, using placeholder URL):", dataToSubmit);
-    const thankYouMessage = dataToSubmit.attending === "yes" 
+    const thankYouMessage = dataToSubmit.attending === "yes"
       ? "¡Gracias por confirmar tu asistencia! Nos vemos en la celebración."
       : "Lamentamos que no puedas asistir. ¡Gracias por responder!";
-    
+
     return {
       message: `${thankYouMessage} (Nota: La integración con Google Sheets no está configurada completamente. Reemplaza la URL en actions.ts).`,
-      success: true, 
+      success: true,
       submittedData: dataToSubmit,
     };
   }
@@ -80,20 +64,20 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(dataToSubmit), 
+      body: JSON.stringify(dataToSubmit),
     });
     console.log("[submitRsvp Action] Google Sheet API response status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[submitRsvp Action] Google Sheet API Error. Status:", response.status, "Body:", errorText);
-      let errorDataMessage = `Error del servidor: ${response.statusText}`;
+      let errorDataMessage = `Error del servidor: ${response.statusText || 'Error desconocido'}`;
       try {
         const errorJson = JSON.parse(errorText);
-        errorDataMessage = errorJson.message || response.statusText;
+        errorDataMessage = errorJson.message || response.statusText || 'Error procesando respuesta del servidor.';
       } catch (e) {
         // If parsing error body as JSON fails, use the raw text or statusText
-        errorDataMessage = errorText || response.statusText;
+        errorDataMessage = errorText || response.statusText || 'Error en la respuesta del servidor.';
       }
       return {
         message: `Hubo un problema al guardar tu confirmación en Google Sheets: ${errorDataMessage}. Por favor, intenta de nuevo o contacta al organizador.`,
@@ -105,7 +89,7 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
     const result = await response.json();
     console.log("[submitRsvp Action] Google Sheet API Success:", result);
 
-    const thankYouMessage = dataToSubmit.attending === "yes" 
+    const thankYouMessage = dataToSubmit.attending === "yes"
       ? "¡Gracias por confirmar tu asistencia! Nos vemos en la celebración."
       : "Lamentamos que no puedas asistir. ¡Gracias por responder!";
 
