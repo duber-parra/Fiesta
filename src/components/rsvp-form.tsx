@@ -2,8 +2,8 @@
 "use client";
 
 import type { ChangeEvent} from 'react';
-import { useState, useEffect } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useState, useEffect, useActionState } from "react"; // Updated import
+import { useFormStatus } from "react-dom"; // useFormState removed
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -57,7 +57,7 @@ function SubmitButton() {
 }
 
 export function RsvpForm() {
-  const [state, formAction] = useFormState(submitRsvp, initialState);
+  const [state, formAction] = useActionState(submitRsvp, initialState); // Updated to useActionState
   const { toast } = useToast();
 
   const form = useForm<RsvpFormData>({
