@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ChangeEvent} from 'react';
@@ -55,7 +56,6 @@ function SubmitButton() {
 
 export function RsvpForm() {
   const [state, formAction] = useFormState(submitRsvp, initialState);
-  const [showGuestNameInput, setShowGuestNameInput] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<RsvpFormData>({
@@ -71,7 +71,6 @@ export function RsvpForm() {
 
   useEffect(() => {
     if (watchAttending === "no") {
-      setShowGuestNameInput(false);
       form.setValue("guestName", "");
     }
   }, [watchAttending, form]);
@@ -86,7 +85,6 @@ export function RsvpForm() {
           action: <CheckCircle2 className="text-green-500" />,
         });
         form.reset();
-        setShowGuestNameInput(false);
       } else {
         toast({
           title: "Error en la Confirmación",
@@ -97,8 +95,7 @@ export function RsvpForm() {
         if (state.errors) {
           type FormFieldKey = keyof RsvpFormData | "_form";
           (Object.keys(state.errors) as FormFieldKey[]).forEach((key) => {
-            const fieldKey = key === "_form" ? undefined : key; // For general form errors, react-hook-form doesn't have a direct way to setRootError from server.
-                                                               // We'll rely on the toast for general errors.
+            const fieldKey = key === "_form" ? undefined : key; 
             if (fieldKey && state.errors && state.errors[fieldKey]) {
                  form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: state.errors[fieldKey]?.[0] });
             }
@@ -107,7 +104,7 @@ export function RsvpForm() {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, toast]); // form should not be in deps to avoid re-triggering on form object change
+  }, [state, toast]); 
 
   return (
     <Card className="shadow-xl">
@@ -156,7 +153,6 @@ export function RsvpForm() {
                       onValueChange={(value: "yes" | "no") => {
                         field.onChange(value);
                         if (value === "no") {
-                          setShowGuestNameInput(false);
                           form.setValue("guestName", "");
                         }
                       }}
@@ -187,35 +183,19 @@ export function RsvpForm() {
             />
 
             {watchAttending === "yes" && (
-              <>
-                {!showGuestNameInput && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full border-primary text-primary hover:bg-primary/10"
-                    onClick={() => setShowGuestNameInput(true)}
-                  >
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Agregar acompañante +
-                  </Button>
+              <FormField
+                control={form.control}
+                name="guestName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre del Acompañante (Opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nombre de tu acompañante" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-
-                {showGuestNameInput && (
-                  <FormField
-                    control={form.control}
-                    name="guestName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre del Acompañante (Opcional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nombre de tu acompañante" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-              </>
+              />
             )}
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
