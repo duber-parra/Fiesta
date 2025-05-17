@@ -98,3 +98,22 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Confetti animation */
+@layer utilities {
+  @keyframes fall {
+    0% {
+      transform: translateY(-50px) rotate(0deg); /* Start slightly above viewport */
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(110vh) rotate(720deg); /* Fall well below viewport and rotate */
+      opacity: 0;
+    }
+  }
+  .animate-fall {
+    animation-name: fall;
+    animation-timing-function: linear; /* Consistent falling speed */
+    animation-fill-mode: forwards; /* Maintain end state (opacity: 0) */
+  }
+}
