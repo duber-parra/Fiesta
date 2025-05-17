@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PartyPopper, CalendarDays, Clock3, MapPin, Gift } from "lucide-react";
+import { CalendarDays, Clock3, MapPin, Gift } from "lucide-react";
+import Image from 'next/image'; // Import next/image
 
 export function EventDetails() {
   const eventLocationUrl = "https://www.google.com/maps/embed?pb=!1m23!1m12!1m3!1d127224.59614033248!2d-75.77886649628904!3d4.809744220402923!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m8!3e6!4m0!4m5!1s0x8e387a4d9d3740fd%3A0x364642def000b8d6!2sLa%20Virginia-Cerritos%2C%20entrada%2012%2C%20Pereira%2C%20Risaralda!3m2!1d4.79694!2d-75.856409!5e0!3m2!1sen!2sco!4v1747468925504!5m2!1sen!2sco";
@@ -9,7 +10,16 @@ export function EventDetails() {
     <Card className="shadow-xl">
       <CardHeader className="text-center">
         <div className="flex justify-center items-center mb-4">
-          <PartyPopper className="w-12 h-12 text-primary" />
+          {/* Replace PartyPopper with Image component */}
+          <Image
+            src="https://i.postimg.cc/ZRr0BcPb/Jorge-3.jpg"
+            alt="Jorge Enrique Carvajal"
+            width={96} // w-24 (96px)
+            height={96} // h-24 (96px)
+            className="rounded-full object-cover border-2 border-primary shadow-md"
+            priority // Optional: if the image is above the fold
+            data-ai-hint="portrait person"
+          />
         </div>
         <CardTitle className="text-3xl font-bold text-primary">🎉 ¡Estás Invitado! 🎉</CardTitle>
         <CardDescription className="text-lg text-foreground/80 mt-2">
