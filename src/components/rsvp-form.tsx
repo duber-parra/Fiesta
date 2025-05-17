@@ -3,7 +3,7 @@
 
 import type { ChangeEvent} from 'react';
 import { useState, useEffect, useActionState } from "react"; // Updated import
-import { useFormStatus } from "react-dom"; // useFormState removed
+import { useFormStatus } from "react-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -57,7 +57,7 @@ function SubmitButton() {
 }
 
 export function RsvpForm() {
-  const [state, formAction] = useActionState(submitRsvp, initialState); // Updated to useActionState
+  const [state, formAction] = useActionState(submitRsvp, initialState);
   const { toast } = useToast();
 
   const form = useForm<RsvpFormData>({
@@ -132,9 +132,22 @@ export function RsvpForm() {
       </CardHeader>
       <Form {...form}>
         <form
-          action={(formData) => {
-            form.handleSubmit(() => formAction(formData))();
-          }}
+          action={formAction} // Pass the server action directly here
+          onSubmit={form.handleSubmit(
+            () => {
+              // This callback is for successful client-side validation.
+              // react-hook-form will allow the form submission to proceed,
+              // and React will invoke the server action in `action` prop.
+              // No need to manually call formAction(formData) here.
+              // console.log("Client-side validation successful. Submitting to server action.");
+            },
+            (errors) => {
+              // This callback is for failed client-side validation.
+              // react-hook-form automatically updates formState.errors,
+              // which will be picked up by FormMessage components.
+              console.log("Client-side validation failed:", errors);
+            }
+          )}
           className="space-y-6"
         >
           <CardContent className="space-y-4">
@@ -271,3 +284,4 @@ export function RsvpForm() {
     </Card>
   );
 }
+
