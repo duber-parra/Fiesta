@@ -4,7 +4,7 @@
 import type { ChangeEvent} from 'react';
 import { useState, useEffect } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { UserPlus, Send, Loader2, CheckCircle2, XCircle } from "lucide-react";
@@ -25,7 +25,9 @@ const rsvpFormSchema = z.object({
   attending: z.enum(["yes", "no"], {
     required_error: "Por favor selecciona si asistirás o no.",
   }),
-  guestName: z.string().optional(),
+  guestNames: z.array(
+    z.string().min(1, { message: "El nombre del acompañante no puede estar vacío si se añade el campo." })
+  ).optional(),
 });
 
 type RsvpFormData = z.infer<typeof rsvpFormSchema>;
@@ -63,17 +65,22 @@ export function RsvpForm() {
     defaultValues: {
       fullName: "",
       whatsapp: "",
-      guestName: "",
+      guestNames: [],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "guestNames",
   });
 
   const watchAttending = form.watch("attending");
 
   useEffect(() => {
     if (watchAttending === "no") {
-      form.setValue("guestName", "");
+      remove(); // Removes all guest name fields
     }
-  }, [watchAttending, form]);
+  }, [watchAttending, remove]);
   
   useEffect(() => {
     if (state.message) {
@@ -84,7 +91,7 @@ export function RsvpForm() {
           variant: "default",
           action: <CheckCircle2 className="text-green-500" />,
         });
-        form.reset();
+        form.reset(); // This will also reset the field array
       } else {
         toast({
           title: "Error en la Confirmación",
@@ -97,14 +104,31 @@ export function RsvpForm() {
           (Object.keys(state.errors) as FormFieldKey[]).forEach((key) => {
             const fieldKey = key === "_form" ? undefined : key; 
             if (fieldKey && state.errors && state.errors[fieldKey]) {
-                 form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: state.errors[fieldKey]?.[0] });
+                 // For guestNames, this will show a general error for the array, not individual fields.
+                 // Zod's fieldErrors for an array of strings with errors might be:
+                 // guestNames: { _errors: [], "0": ["msg for item 0"], "1": ["msg for item 1"] }
+                 // The current logic might pick up _errors?.[0] or the first indexed error.
+                 const errorMessages = state.errors[fieldKey];
+                 let messageToShow: string | undefined;
+                 if (typeof errorMessages === 'object' && errorMessages !== null && !Array.isArray(errorMessages)) {
+                    // Potentially Zod's object structure for array errors
+                    messageToShow = (errorMessages as any)._errors?.[0] || Object.values(errorMessages as any).flat()?.[0] as string | undefined;
+                 } else if (Array.isArray(errorMessages)) {
+                    messageToShow = errorMessages[0];
+                 }
+
+                 if (messageToShow) {
+                    form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: messageToShow });
+                 } else if (typeof errorMessages === 'string') { // Fallback for simple string error
+                    form.setError(fieldKey as keyof RsvpFormData, { type: "server", message: errorMessages });
+                 }
             }
           });
         }
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, toast]); 
+  }, [state, toast]); // form is not needed in deps as per react-hook-form docs for setError
 
   return (
     <Card className="shadow-xl">
@@ -112,7 +136,12 @@ export function RsvpForm() {
         <CardTitle className="text-2xl font-semibold text-center text-primary">Formulario de Confirmación</CardTitle>
       </CardHeader>
       <Form {...form}>
-        <form action={formAction} className="space-y-6">
+        <form
+          action={(formData) => {
+            form.handleSubmit(() => formAction(formData))();
+          }}
+          className="space-y-6"
+        >
           <CardContent className="space-y-4">
             <FormField
               control={form.control}
@@ -151,9 +180,9 @@ export function RsvpForm() {
                   <FormControl>
                     <RadioGroup
                       onValueChange={(value: "yes" | "no") => {
-                        field.onChange(value);
+                        field.onChange(value); // Update RHF state for "attending"
                         if (value === "no") {
-                          form.setValue("guestName", "");
+                          remove(); // Clear all guest name fields from the array
                         }
                       }}
                       value={field.value}
@@ -183,19 +212,46 @@ export function RsvpForm() {
             />
 
             {watchAttending === "yes" && (
-              <FormField
-                control={form.control}
-                name="guestName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre del Acompañante (Opcional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nombre de tu acompañante" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-4 pt-2 border-t border-border">
+                <FormLabel className="pt-2 block">Acompañantes (Opcional)</FormLabel>
+                {fields.map((item, index) => (
+                  <FormField
+                    control={form.control}
+                    key={item.id}
+                    name={`guestNames.${index}`}
+                    render={({ field: guestField }) => (
+                      <FormItem>
+                        <div className="flex items-center space-x-2">
+                          <FormControl>
+                            <Input placeholder={`Nombre del acompañante ${index + 1}`} {...guestField} />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => remove(index)}
+                            className="text-destructive hover:text-destructive/80 flex-shrink-0"
+                            aria-label={`Eliminar acompañante ${index + 1}`}
+                          >
+                            <XCircle className="h-5 w-5" />
+                          </Button>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => append("")}
+                  className="mt-2 flex items-center"
+                >
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Agregar Acompañante
+                </Button>
+              </div>
             )}
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
@@ -206,6 +262,8 @@ export function RsvpForm() {
           </CardFooter>
         </form>
       </Form>
+      {/* This success message display seems redundant if toast is used for success.
+          Consider removing if toast is sufficient. Keeping for now. */}
       {state.success && state.message && (
          <div className="p-4 mt-4 text-center bg-green-100 border border-green-300 text-green-700 rounded-md">
             <p>{state.message}</p>
@@ -218,3 +276,5 @@ export function RsvpForm() {
     </Card>
   );
 }
+
+    

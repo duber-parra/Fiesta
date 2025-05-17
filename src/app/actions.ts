@@ -1,3 +1,4 @@
+
 "use server";
 
 import { z } from "zod";
@@ -8,22 +9,42 @@ const rsvpFormSchema = z.object({
     message: "Número de WhatsApp inválido.",
   }),
   attending: z.enum(["yes", "no"]),
-  guestName: z.string().optional(),
+  guestNames: z.array(
+    z.string().min(1, "El nombre del acompañante no puede estar vacío si se añade el campo.")
+  ).optional(),
 });
 
 export type RsvpFormState = {
   message: string;
   success: boolean;
-  errors?: Partial<Record<keyof z.infer<typeof rsvpFormSchema> | "_form", string[]>>;
+  // This type needs to accommodate Zod's fieldErrors structure for arrays, 
+  // which can be { _errors?: string[], "0"?: string[], "1"?: string[] }
+  errors?: Partial<Record<keyof z.infer<typeof rsvpFormSchema>, any | string[]>> & { _form?: string[] };
   submittedData?: z.infer<typeof rsvpFormSchema>;
 };
 
 export async function submitRsvp(prevState: RsvpFormState, formData: FormData): Promise<RsvpFormState> {
+  
+  const tempGuestNames: { index: number, value: string }[] = [];
+  for (const [key, value] of formData.entries()) {
+    // react-hook-form names field array inputs like "guestNames.0", "guestNames.1", etc.
+    const match = key.match(/^guestNames\.(\d+)$/);
+    if (match && typeof value === 'string') {
+      tempGuestNames.push({ index: parseInt(match[1], 10), value: value });
+    }
+  }
+  // Sort by index to ensure correct order, as FormData iteration order isn't strictly guaranteed for all keys
+  tempGuestNames.sort((a, b) => a.index - b.index);
+  const guestNamesArray = tempGuestNames.map(item => item.value);
+  // Empty strings submitted from empty fields will be validated by Zod's .min(1)
+
   const rawFormData = {
     fullName: formData.get("fullName"),
     whatsapp: formData.get("whatsapp"),
     attending: formData.get("attending"),
-    guestName: formData.get("guestName"),
+    // Pass the array; if no guests were added, it will be empty, which is fine for .optional()
+    // If guests were added but names are empty, Zod's .min(1) on the string will catch it.
+    guestNames: guestNamesArray.length > 0 ? guestNamesArray : undefined,
   };
 
   const validatedFields = rsvpFormSchema.safeParse(rawFormData);
@@ -56,3 +77,5 @@ export async function submitRsvp(prevState: RsvpFormState, formData: FormData): 
     submittedData: data,
   };
 }
+
+    
