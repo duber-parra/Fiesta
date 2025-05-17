@@ -24,7 +24,7 @@ export type RsvpFormState = {
 };
 
 // !!! IMPORTANT: REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL !!!
-const GOOGLE_SHEET_WEB_APP_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"; 
+const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRmBhm6Yp-uh89kSyw6nAjI-ZpTzml0RpEJHLtvXBu03jFSURjDX4IDOnzSc25V6VFwQ/exec"; 
 // Example: "https://script.google.com/macros/s/ABCDEFG1234567/exec"
 
 export async function submitRsvp(prevState: RsvpFormState, formData: FormData): Promise<RsvpFormState> {
