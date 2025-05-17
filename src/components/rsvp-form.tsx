@@ -129,7 +129,7 @@ export function RsvpForm() {
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, toast]); // form.reset is stable, no need to add `form` to deps
+  }, [state, toast]); 
 
   return (
     <Card className="shadow-xl">
@@ -141,11 +141,10 @@ export function RsvpForm() {
           action={formAction}
           onSubmit={form.handleSubmit(
             () => {
-              // Client-side validation successful, server action will proceed.
+              console.log("[RsvpForm] Client-side validation passed. Native form submission should proceed.");
             },
             (errors) => {
-              // Client-side validation failed.
-              console.log("Client-side validation failed:", errors);
+              console.error("[RsvpForm] Client-side validation failed:", errors);
             }
           )}
           className="space-y-6"
@@ -273,11 +272,11 @@ export function RsvpForm() {
         </form>
       </Form>
       {state.success && state.message && (
-         <div className="p-4 mt-4 text-center bg-green-100 border border-green-300 text-green-700 rounded-md mx-6 mb-2"> {/* Added mx-6 mb-2 for better spacing */}
+         <div className="p-4 mt-4 text-center bg-green-100 border border-green-300 text-green-700 rounded-md mx-6 mb-2">
             <p>{state.message}</p>
          </div>
       )}
-      <div className="p-6 pt-0 text-center text-sm text-muted-foreground"> {/* Changed p-6 to pt-0 if success message is shown */}
+      <div className="p-6 pt-0 text-center text-sm text-muted-foreground">
         <p className="font-semibold">Aviso Importante:</p>
         <p>Una vez envíes tu confirmación, recibirás un mensaje agradeciendo tu respuesta. ¡Esperamos contar contigo para celebrar a Jorge Enrique!</p>
       </div>
