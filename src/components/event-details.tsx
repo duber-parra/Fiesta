@@ -21,9 +21,6 @@ export function EventDetails() {
           />
         </div>
         <CardTitle className="text-3xl font-bold text-primary">🎉 ¡Estás Invitado! 🎉</CardTitle>
-        <CardDescription className="text-lg text-foreground/80 mt-2">
-          Celebración de los 95 Años de Jorge Enrique Carvajal
-        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <p className="text-center text-foreground/90">
