@@ -13,8 +13,8 @@ export function EventDetails() {
           <Image
             src="https://i.postimg.cc/QCKSRcXw/portadaa.png"
             alt="Jorge Enrique Carvajal - Portada Celebración 95 Años"
-            width={160} // Increased from 128 to 160
-            height={160} // Increased from 128 to 160
+            width={192} // Scaled by 1.2 from 160
+            height={192} // Scaled by 1.2 from 160
             className="object-cover" // Removed rounded-full and shadow-md
             priority // Optional: if the image is above the fold
             data-ai-hint="portrait person"
