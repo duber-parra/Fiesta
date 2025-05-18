@@ -11,8 +11,8 @@ export function EventDetails() {
       <CardHeader className="text-center">
         <div className="flex justify-center items-center mb-2"> {/* Changed mb-4 to mb-2 */}
           <Image
-            src="https://i.postimg.cc/GhcCwsKs/Jorge-3.png"
-            alt="Jorge Enrique Carvajal"
+            src="https://i.postimg.cc/J06jhvtF/portada.png"
+            alt="Jorge Enrique Carvajal - Celebración 95 Años"
             width={160} // Increased from 128 to 160
             height={160} // Increased from 128 to 160
             className="object-cover" // Removed rounded-full and shadow-md
