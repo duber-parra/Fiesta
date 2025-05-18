@@ -7,17 +7,22 @@ import { useState, useEffect } from 'react';
 interface ConfettiParticle {
   id: number;
   style: CSSProperties;
-  colorClass: string;
+  colorClass: string; // For Tailwind classes
 }
 
-// Using Tailwind classes for colors to leverage the existing theme and add some festive variety
-const confettiColorClasses = [
-  'bg-primary',     // From your theme (Warm orange)
-  'bg-accent',      // From your theme (Vibrant yellow)
-  'bg-rose-400',    // A festive pink
-  'bg-sky-400',     // A light blue
-  'bg-lime-400',    // A light green
-  'bg-purple-400',  // A festive purple
+// Define color options, allowing either a Tailwind class or a direct backgroundColor
+interface ColorOption {
+  className?: string;
+  backgroundColor?: string;
+}
+
+const confettiColors: ColorOption[] = [
+  { className: 'bg-slate-300' },    // Silver
+  { className: 'bg-gray-300' },      // Light Gray (Silver tone)
+  { className: 'bg-slate-400' },    // Darker Silver
+  { backgroundColor: '#c8b086' },  // Custom gold/beige
+  { backgroundColor: '#d4c096' },  // A slightly lighter version of custom gold for variety
+  { className: 'bg-white opacity-90' }, // White (can look like silver highlights)
 ];
 
 const NUM_PARTICLES = 150; // Number of confetti particles
@@ -31,18 +36,27 @@ export function Confetti() {
     const generateParticles = () => {
       const newParticles: ConfettiParticle[] = [];
       for (let i = 0; i < NUM_PARTICLES; i++) {
+        const selectedColorOption = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+        
+        const particleBaseStyle: CSSProperties = {
+          left: `${Math.random() * 100}vw`, // Horizontal position
+          width: `${Math.random() * 8 + 5}px`, // Width between 5px and 13px
+          height: `${Math.random() * 12 + 8}px`, // Height between 8px and 20px
+          transform: `rotate(${Math.random() * 360}deg)`, // Initial rotation
+          animationDuration: `${Math.random() * 4 + 3}s`, // Fall duration: 3s to 7s
+          animationDelay: `${Math.random() * 5}s`, // Stagger start: 0s to 5s
+          opacity: Math.random() * 0.6 + 0.4, // Opacity: 0.4 to 1.0
+        };
+
+        const particleFinalStyle: CSSProperties = { ...particleBaseStyle };
+        if (selectedColorOption.backgroundColor) {
+          particleFinalStyle.backgroundColor = selectedColorOption.backgroundColor;
+        }
+
         newParticles.push({
           id: i,
-          style: {
-            left: `${Math.random() * 100}vw`, // Horizontal position
-            width: `${Math.random() * 8 + 5}px`, // Width between 5px and 13px
-            height: `${Math.random() * 12 + 8}px`, // Height between 8px and 20px
-            transform: `rotate(${Math.random() * 360}deg)`, // Initial rotation
-            animationDuration: `${Math.random() * 4 + 3}s`, // Fall duration: 3s to 7s
-            animationDelay: `${Math.random() * 5}s`, // Stagger start: 0s to 5s
-            opacity: Math.random() * 0.6 + 0.4, // Opacity: 0.4 to 1.0
-          },
-          colorClass: confettiColorClasses[Math.floor(Math.random() * confettiColorClasses.length)],
+          style: particleFinalStyle,
+          colorClass: selectedColorOption.className || '', // Use className if provided, otherwise empty
         });
       }
       setParticles(newParticles);
