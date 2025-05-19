@@ -7,7 +7,7 @@ import { useForm, useFieldArray, FormProvider, useFormContext } from "react-hook
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { UserPlus, Send, Loader2, CheckCircle2, XCircle } from "lucide-react";
-
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -238,6 +238,7 @@ export function RsvpForm() {
             />
 
             {watchAttending === "yes" && (
+              <>
               <div className="space-y-4 pt-2 border-t border-border">
                 <FormLabel className="pt-2 block">Acompañantes (Opcional)</FormLabel>
                 {fields.map((item, index) => (
@@ -267,6 +268,10 @@ export function RsvpForm() {
                     )}
                   />
                 ))}
+                <Alert className="mt-4">
+                  <AlertTitle>Aviso Importante</AlertTitle>
+                  <AlertDescription>¡Qué bueno que quieras compartir este momento! Para acompañantes no acordados, por favor consúltanos antes para coordinar bien todos los detalles del evento. ¡Mil gracias por tu comprensión!</AlertDescription>
+                </Alert>
                 <Button
                   type="button"
                   variant="outline"
@@ -278,6 +283,7 @@ export function RsvpForm() {
                   Agregar Acompañante
                 </Button>
               </div>
+              </>
             )}
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
