@@ -18,7 +18,8 @@ import type { RsvpFormState } from "@/lib/form-schema";
 import { rsvpFormSchema } from "@/lib/form-schema";
 import { useToast } from "@/hooks/use-toast";
 import { Confetti } from "@/components/confetti"; // Import Confetti
-
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 type RsvpFormData = z.infer<typeof rsvpFormSchema>;
 
 const initialState: RsvpFormState = {
@@ -52,6 +53,8 @@ export function RsvpForm() {
   const { toast } = useToast();
   const [showPostSubmitConfetti, setShowPostSubmitConfetti] = useState(false);
   const [confettiKey, setConfettiKey] = useState(0);
+  const [showCompanionWarning, setShowCompanionWarning] = useState(false);
+  const isMobile = useIsMobile();
 
   const form = useForm<RsvpFormData>({
     resolver: zodResolver(rsvpFormSchema),
@@ -155,11 +158,16 @@ export function RsvpForm() {
   };
 
 
+  const handleAddCompanionClick = () => {
+    append(""); // Add the companion field
+    setShowCompanionWarning(true); // Show the warning pop-up
+  };
+
   return (
     <Card className="shadow-xl">
       {showPostSubmitConfetti && <Confetti key={confettiKey} />}
-      <CardHeader>
-        <CardTitle className="text-2xl font-semibold text-center text-primary">Formulario de Confirmación</CardTitle>
+      <CardHeader className="pb-4">
+        <CardTitle className="text-2xl font-semibold text-center text-primary leading-tight">Formulario de Confirmación</CardTitle>
       </CardHeader>
       <FormProvider {...form}>
         <form
@@ -268,20 +276,34 @@ export function RsvpForm() {
                     )}
                   />
                 ))}
-                <Alert className="mt-4">
-                  <AlertTitle>Aviso Importante</AlertTitle>
-                  <AlertDescription>¡Qué bueno que quieras compartir este momento! Para acompañantes no acordados, por favor consúltanos antes para coordinar bien todos los detalles del evento. ¡Mil gracias por tu comprensión!</AlertDescription>
-                </Alert>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="outline" // Assuming you want an outline button for adding companion
                   size="sm"
-                  onClick={() => append("")}
+                  onClick={handleAddCompanionClick} // Use the new click handler
                   className="mt-2 flex items-center"
+
                 >
                   <UserPlus className="mr-2 h-4 w-4" />
                   Agregar Acompañante
                 </Button>
+
+                <Dialog open={showCompanionWarning} onOpenChange={setShowCompanionWarning}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Aviso Importante sobre Acompañantes</DialogTitle>
+                    </DialogHeader>
+                    <DialogDescription>
+                      
+
+ Para acompañantes no autorizados previamente, por favor consúltanos antes para coordinar bien todos los detalles del evento. ¡Mil gracias por tu comprensión!
+                    </DialogDescription>
+ <Button onClick={() => setShowCompanionWarning(false)}>
+ Aceptar
+ </Button>
+                  </DialogContent>
+                </Dialog>
+
               </div>
               </>
             )}
