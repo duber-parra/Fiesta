@@ -71,7 +71,7 @@ export function EventDetails() {
             </div>
             <p className="text-lg font-medium text-primary">¡Confirma tu Asistencia!</p>
             <p className="text-foreground/90">
-            Tu presencia es el mejor regalo. Por favor, ayúdanos a organizar este día especial confirmando tu asistencia y la de tus acompañantes a más tardar el <span className="font-semibold">1 de Junio de 2025</span>.
+            Tu presencia es el mejor regalo. Por favor, ayúdanos a organizar este día especial confirmando tu asistencia y la de tus acompañantes a más tardar el <span className="font-semibold">6 de Junio de 2025</span>.
             </p>
         </div>
       </CardContent>
