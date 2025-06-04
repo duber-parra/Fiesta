@@ -21,6 +21,7 @@ export function EventDetails() {
           />
         </div>
         <CardTitle className="text-3xl font-bold text-primary">🎉 ¡Estás Invitado! 🎉</CardTitle>
+        
       </CardHeader>
       <CardContent className="space-y-6">
         <p className="text-center text-foreground/90">
@@ -38,7 +39,7 @@ export function EventDetails() {
           </div>
           <div className="flex items-start space-x-3">
             <Clock3 className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-            <p><span className="font-semibold">Hora:</span> 3:00 PM</p>
+            <p><span className="font-semibold">Hora:</span> 4:00 PM</p>
           </div>
           <div className="flex items-start space-x-3">
             <MapPin className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
