@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, Clock3, MapPin, Gift, Shirt } from "lucide-react"; // Added Shirt icon
+import { CalendarDays, Clock3, MapPin, Gift, Shirt, AlertTriangle } from "lucide-react"; // Added Shirt and AlertTriangle icons
 import Image from 'next/image';
 
 export function EventDetails() {
@@ -24,7 +24,7 @@ export function EventDetails() {
       </CardHeader>
       <CardContent className="space-y-6">
         <p className="text-center text-foreground/90">
-          Con inmensa alegría, te invitamos a celebrar un hito muy especial: ¡los 95 años de vida de nuestro querido Jorge Enrique Carvajal!
+          Con inmensa alegría, te invitamos a celebrar un hito muy especial: ¡los 95 años de vida de nuestro padre Jorge Enrique Carvajal!
         </p>
         <p className="text-center text-foreground/90">
           Acompáñanos a festejar su admirable trayectoria, sus enseñanzas y el cariño que siempre nos ha brindado. Será un momento inolvidable para honrar su vida y compartir juntos.
