@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Clock3, MapPin, Gift, Shirt } from "lucide-react";
 import Image from 'next/image';
 import { MapNavigationButtons } from './map-navigation-buttons'; // Import the new component
+import { CardDescription } from "@/components/ui/card";
 
 export function EventDetails() {
   const eventLocationUrl = "https://www.google.com/maps/embed?pb=!1m23!1m12!1m3!1d127224.59614033248!2d-75.77886649628904!3d4.809744220402923!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m8!3e6!4m0!4m5!1s0x8e387a4d9d3740fd%3A0x364642def000b8d6!2sLa%20Virginia-Cerritos%2C%20entrada%2012%2C%20Pereira%2C%20Risaralda!3m2!1d4.79694!2d-75.856409!5e0!3m2!1sen!2sco!4v1747468925504!5m2!1sen!2sco";
@@ -39,7 +40,7 @@ export function EventDetails() {
           <h3 className="text-xl font-semibold text-center text-primary mb-3">Detalles del Evento:</h3>
           <div className="flex items-start space-x-3">
             <CalendarDays className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-            <p><span className="font-semibold">Fecha:</span> Domingo, 23 de Junio de 2025</p>
+            <p><span className="font-semibold">Fecha:</span> Domingo, 22 de Junio de 2025</p>
           </div>
           <div className="flex items-start space-x-3">
             <Clock3 className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
