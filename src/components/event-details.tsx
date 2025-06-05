@@ -1,10 +1,14 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, Clock3, MapPin, Gift, Shirt, AlertTriangle } from "lucide-react"; // Added Shirt and AlertTriangle icons
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CalendarDays, Clock3, MapPin, Gift, Shirt } from "lucide-react";
 import Image from 'next/image';
+import { MapNavigationButtons } from './map-navigation-buttons'; // Import the new component
 
 export function EventDetails() {
   const eventLocationUrl = "https://www.google.com/maps/embed?pb=!1m23!1m12!1m3!1d127224.59614033248!2d-75.77886649628904!3d4.809744220402923!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m8!3e6!4m0!4m5!1s0x8e387a4d9d3740fd%3A0x364642def000b8d6!2sLa%20Virginia-Cerritos%2C%20entrada%2012%2C%20Pereira%2C%20Risaralda!3m2!1d4.79694!2d-75.856409!5e0!3m2!1sen!2sco!4v1747468925504!5m2!1sen!2sco";
+  const eventLatitude = 4.79694;
+  const eventLongitude = -75.856409;
+  const eventPlaceName = "Cabañas Cafeteras Cerritos, Pereira";
 
   return (
     <Card className="shadow-xl">
@@ -44,16 +48,16 @@ export function EventDetails() {
           <div className="flex items-start space-x-3">
             <MapPin className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
             <div>
-                <p><span className="font-semibold">Lugar:</span> Cabañas Cafeteras Cerritos, Pereira.</p>
+                <p><span className="font-semibold">Lugar:</span> {eventPlaceName}.</p>
             </div>
           </div>
-          <div className="flex items-start space-x-3"> {/* Added Dress Code section */}
+          <div className="flex items-start space-x-3">
             <Shirt className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
             <p><span className="font-semibold">Código de Vestimenta:</span> Ropa informal, cómoda para disfrutar el momento.</p>
           </div>
         </div>
 
-        <div className="aspect-w-16 aspect-h-9 mt-6 overflow-hidden shadow-md">
+        <div className="aspect-w-16 aspect-h-9 mt-6 overflow-hidden shadow-md rounded-lg">
           <iframe
             src={eventLocationUrl}
             width="100%"
@@ -65,6 +69,11 @@ export function EventDetails() {
             title="Ubicación del evento"
           ></iframe>
         </div>
+        <MapNavigationButtons 
+          latitude={eventLatitude}
+          longitude={eventLongitude}
+          placeName={eventPlaceName}
+        />
         
         <div className="text-center pt-6 border-t border-border">
             <div className="flex justify-center items-center mb-2">
