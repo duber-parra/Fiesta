@@ -16,13 +16,13 @@ export function EventDetails() {
       <CardHeader className="text-center">
         <div className="flex justify-center items-center mb-2">
           <Image
-            src="https://i.postimg.cc/QCKSRcXw/portadaa.png"
-            alt="Jorge Enrique Carvajal - Portada Celebración 95 Años"
-            width={346} 
-            height={346} 
-            className="object-cover"
+            src="https://i.postimg.cc/tRBxcdCf/Imagen-de-Whats-App-2025-05-16-a-las-20.png"
+            alt="Jorge Enrique Carvajal - Celebración 95 Años"
+            width={346}
+            height={346}
+            className="object-cover rounded-md"
             priority
-            data-ai-hint="portrait person"
+            data-ai-hint="celebration portrait"
           />
         </div>
         <CardTitle className="text-3xl font-bold text-primary">🎉 ¡Estás Invitado! 🎉</CardTitle>
@@ -70,7 +70,7 @@ export function EventDetails() {
             title="Ubicación del evento"
           ></iframe>
         </div>
-        <MapNavigationButtons 
+        <MapNavigationButtons
           latitude={eventLatitude}
           longitude={eventLongitude}
           placeName={eventPlaceName}
