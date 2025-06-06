@@ -16,7 +16,7 @@ export function EventDetails() {
       <CardHeader className="text-center">
         <div className="flex justify-center items-center mb-2">
           <Image
-            src="https://i.postimg.cc/tRBxcdCf/Imagen-de-Whats-App-2025-05-16-a-las-20.png"
+            src="https://i.postimg.cc/x1DdCgfc/Imagen-de-Whats-App-2025-05-16-a-las-20.png"
             alt="Jorge Enrique Carvajal - Celebración 95 Años"
             width={346}
             height={346}
